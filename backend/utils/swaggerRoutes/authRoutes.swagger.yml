@@ -1,0 +1,118 @@
+paths:
+  /api/auth:
+    post:
+      summary: Log in a user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: alkisax
+                password:
+                  type: string
+                  example: AdminPass1!
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI...
+                      user:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 64f1b8a97c05f9a4d9d12345
+                          id:
+                            type: string
+                            example: 64f1b8a97c05f9a4d9d12345
+                          username:
+                            type: string
+                            example: alkisax
+                          firstname:
+                            type: string
+                            example: Pelopidas
+                          lastname:
+                            type: string
+                            example: Kopakakis
+                          email:
+                            type: string
+                            example: alkisax@example.com
+                          phone:
+                            type: array
+                            items:
+                              type: string
+                            example: ["+302101234567"]
+                          AFM:
+                            type: string
+                            example: "123456789"
+                          building:
+                            type: string
+                            example: "Building A"
+                          flat:
+                            type: string
+                            example: "3B"
+                          balance:
+                            type: number
+                            example: 120.50
+                          lastClearedMonth:
+                            type: string
+                            format: date-time
+                            example: 2025-08-01T00:00:00.000Z
+                          notes:
+                            type: array
+                            items:
+                              type: string
+                            example: ["Good payer"]
+                          uploadsMongo:
+                            type: array
+                            items:
+                              type: string
+                          uploadsAppwrite:
+                            type: array
+                            items:
+                              type: string
+                          roles:
+                            type: array
+                            items:
+                              type: string
+                              enum: [USER, ADMIN]
+                            example: ["USER"]
+                          hasPassword:
+                            type: boolean
+                            example: true
+                          provider:
+                            type: string
+                            example: backend
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: 2025-09-26T10:00:00.000Z
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            example: 2025-09-26T10:00:00.000Z
+        '400':
+          description: Missing username or password
+        '401':
+          description: Invalid username or password
