@@ -11,6 +11,11 @@ interface ExcelParseResult {
   userBills: Row[];
 }
 
+// helper για να στρογγυλεύουμε κάθε κελί
+const normalizeRow = (row: Row): Row =>
+  row.map(cell => (typeof cell === "number" ? parseFloat(cell.toFixed(2)) : cell));
+
+
 // παίρνει ένα string με την θέση του αρχείου και επιστρέφει τους δύο λογαριασμούς ως array
 export const parseExcel = (filePath: string): ExcelParseResult => {
   const workbook = XLSX.readFile(filePath);
@@ -28,18 +33,22 @@ export const parseExcel = (filePath: string): ExcelParseResult => {
   // - header: 1 σημαίνει ότι θέλουμε απλό array χωρίς mapping σε αντικείμενα με headers
   // - range: process.env.USER_BILLS → το range κελιών που μας ενδιαφέρει (π.χ. "A15:K26"), ορίζεται σε env
   // - defval: null → αν το κελί είναι άδειο, να γυρίσει null αντί για undefined
-  const userBills = XLSX.utils.sheet_to_json<Row>(worksheet, {
+  const rawUserBills  = XLSX.utils.sheet_to_json<Row>(worksheet, {
     header: 1,
     range: process.env.USER_BILLS,
     defval: null,
   });
 
   // Αντίστοιχα, παίρνουμε τον συγκεντρωτικό λογαριασμό από το range που έχουμε ορίσει στο env (π.χ. "D6:F13")
-  const globalInfo = XLSX.utils.sheet_to_json<Row>(worksheet, {
+  const rawGlobalInfo  = XLSX.utils.sheet_to_json<Row>(worksheet, {
     header: 1,
     range: process.env.GLOBAL_INFO,
     defval: null,
   });
+
+  // Εδώ καθαρίζουμε τα floats
+  const userBills = rawUserBills.map(normalizeRow);
+  const globalInfo = rawGlobalInfo.map(normalizeRow);
 
   return {
     globalInfo,
