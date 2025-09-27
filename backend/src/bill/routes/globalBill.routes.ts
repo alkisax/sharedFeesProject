@@ -1,0 +1,21 @@
+import express from 'express'
+const router = express.Router()
+import { globalBillController } from '../controllers/globalBill.controller'
+import { middleware } from '../../login/middleware/verification.middleware'
+// import { limiter } from '../../utils/limiter'
+
+// create
+router.post( '/', middleware.verifyToken, middleware.checkRole('ADMIN'),  globalBillController.createGlobalBill )
+
+// read
+router.get( '/', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.findAllGlobal )
+
+router.get( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.readGlobalById )
+
+// update
+router.put( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.updateGlobalById )
+
+// delete
+router.delete( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.deleteGlobalById )
+
+export default router

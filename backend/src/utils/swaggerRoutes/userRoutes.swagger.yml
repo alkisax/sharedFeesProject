@@ -553,3 +553,46 @@ components:
           type: string
           format: date-time
           example: 2025-09-26T10:00:00.000Z
+          
+  /api/users/{id}/balance:
+    get:
+      summary: Get the balance of a user (sum of unpaid bills)
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: User balance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: string
+                        example: 64f1b8a97c05f9a4d9d12345
+                      balance:
+                        type: number
+                        example: 123.45
+        '400':
+          description: Bad request - missing ID
+        '401':
+          description: Unauthorized - no token or invalid
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error

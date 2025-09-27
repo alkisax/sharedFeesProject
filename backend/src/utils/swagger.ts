@@ -1,6 +1,8 @@
 import m2s from 'mongoose-to-swagger';
 import User from '../login/models/users.models';
 import Upload from '../uploadMulter/upload.model';
+import GlobalBill from '../bill/models/globalBill.model';
+import Bill from '../bill/models/bill.model';
 import swaggerJsdoc from 'swagger-jsdoc';
 import yaml from 'yamljs';
 import path from 'path';
@@ -17,6 +19,12 @@ const authRoutesDocs = yaml.load(
 const uploadMulterRoutesDocs = yaml.load(
   path.join(__dirname, 'swaggerRoutes', 'uploadMulterRoutes.swagger.yml' )
 );
+const globalBillRoutesDocs = yaml.load(
+  path.join(__dirname, 'swaggerRoutes', 'globalBillRoutes.swagger.yml' )
+);
+const billRoutesDocs = yaml.load(
+  path.join(__dirname, 'swaggerRoutes', 'billRoutes.swagger.yml' )
+);
 
 
 const options = {
@@ -31,6 +39,8 @@ const options = {
       schemas: {
         User: m2s(User),
         Multer: m2s(Upload),
+        GlobalBill: m2s(GlobalBill),
+        Bill: m2s(Bill)
       },
       securitySchemes: {
         bearerAuth: {
@@ -46,6 +56,8 @@ const options = {
       ...userRoutesDocs.paths,
       // ...emailRoutesDocs.paths,
       ...uploadMulterRoutesDocs.paths,
+      ...globalBillRoutesDocs.paths,
+      ...billRoutesDocs.paths,
     },  },
   apis: []
   // δεν το χρησιμοποιούμε αυτό γιατι εχουν μεταφερθεί τα swagger docs στo yaml αρχειο

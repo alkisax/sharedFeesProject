@@ -1,0 +1,176 @@
+components:
+  schemas:
+    Bill:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 64f9c2c9d5c3a01234567890
+        userId:
+          type: string
+          example: 64f9c2c9d5c3a0987654321
+        globalBillId:
+          type: string
+          example: 64f9c2c9d5c3a01234567890
+        month:
+          type: string
+          example: '2025-07'
+        building:
+          type: string
+          example: 'ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18'
+        flat:
+          type: string
+          example: 'ΙΣ'
+        ownerName:
+          type: string
+          example: 'Δρακοπούλου'
+        share:
+          type: number
+          example: 99.7
+        breakdown:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            ΔΕΗ: 15.15
+            Καθαριότητα: 6.48
+            Ασανσέρ: 3.11
+        amount:
+          type: number
+          example: 27.25
+        status:
+          type: string
+          enum: [PENDING, PAID, APPROVED]
+        receiptUrl:
+          type: string
+          example: 'https://appwrite.io/storage/receipt123.pdf'
+        notes:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+paths:
+  /api/bills:
+    post:
+      summary: Create a new Bill
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bill'
+      responses:
+        '201':
+          description: Bill created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+    get:
+      summary: Get all Bills (admin)
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '200':
+          description: List of bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+
+  /api/bills/me:
+    get:
+      summary: Get bills of logged-in user
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '200':
+          description: List of user bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+
+  /api/bills/{id}/pay:
+    patch:
+      summary: Mark Bill as paid
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bill marked as paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+
+  /api/bills/{id}/approve:
+    patch:
+      summary: Approve Bill (admin)
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bill approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+
+  /api/bills/{id}:
+    put:
+      summary: Update Bill (admin)
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bill'
+      responses:
+        '200':
+          description: Bill updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+    delete:
+      summary: Delete Bill (admin)
+      tags: [Bills]
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bill deleted

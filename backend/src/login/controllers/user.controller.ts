@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import User from '../models/users.models';
 import { handleControllerError } from '../../utils/error/errorHandler';
 import { userDAO } from '../dao/user.dao';
+import { billDAO } from '../../bill/dao/bill.dao'
 
 import type { Request, Response } from 'express';
 import type { UpdateUser, AuthRequest } from '../types/user.types';
@@ -246,6 +247,46 @@ export const deleteById = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserBalance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id
+    if (!userId) {
+      return res.status(400).json({ status: false, message: 'User ID is required' })
+    }
+
+    // βρίσκουμε όλα τα bills του χρήστη
+    const bills = await billDAO.readByUser(userId)
+    if (!bills) {
+      return res.status(404).json({ status: false, message: 'User not found or no bills' })
+    }
+
+    // υπολογίζουμε balance = άθροισμα unpaid (PENDING)
+    const balance = bills
+      .filter((b) => b.status === 'PENDING')
+      .reduce((acc, b) => acc + b.amount, 0)
+
+    return res.status(200).json({ status: true, data: { userId, balance } })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+// get own balance (self)
+export const getMyBalance = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ status: false, message: 'Unauthorized' })
+    }
+
+    const user = await userDAO.readById(req.user.id)
+    return res.status(200).json({ status: true, balance: user.balance ?? 0 })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+
+
 export const userController = {
   createUser,
   createAdmin,
@@ -255,5 +296,7 @@ export const userController = {
   readByEmail,
   toggleRoleById,
   updateById,
-  deleteById
+  deleteById,
+  getUserBalance,
+  getMyBalance
 };

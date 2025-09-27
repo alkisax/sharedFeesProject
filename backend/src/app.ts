@@ -13,6 +13,8 @@ import swaggerUi from 'swagger-ui-express';
 import uploadMulterRoutes from './uploadMulter/upload.routes';
 import authRoutes from './login/routes/auth.routes';
 import userRoutes from './login/routes/user.routes';
+import billRoutes from './bill//routes/bill.routes'
+import globalBillRoutes from './bill/routes/globalBill.routes'
 
 const app = express();
 
@@ -124,6 +126,8 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/bills', billRoutes)
+app.use('/api/global-bills', globalBillRoutes)
 
 // app.use('/api/email', emailRoutes);
 
