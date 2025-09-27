@@ -25,6 +25,9 @@ const globalBillRoutesDocs = yaml.load(
 const billRoutesDocs = yaml.load(
   path.join(__dirname, 'swaggerRoutes', 'billRoutes.swagger.yml' )
 );
+const excelRoutesDocs = yaml.load(
+  path.join(__dirname, 'swaggerRoutes', 'excelRoutes.swagger.yml' )
+);
 
 
 const options = {
@@ -58,6 +61,7 @@ const options = {
       ...uploadMulterRoutesDocs.paths,
       ...globalBillRoutesDocs.paths,
       ...billRoutesDocs.paths,
+      ...excelRoutesDocs.paths,
     },  },
   apis: []
   // δεν το χρησιμοποιούμε αυτό γιατι εχουν μεταφερθεί τα swagger docs στo yaml αρχειο

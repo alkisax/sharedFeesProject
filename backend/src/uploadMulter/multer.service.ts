@@ -7,7 +7,7 @@ import path from 'path';
 import type { Request } from 'express';
 
 //export γιατι θα το χρησιμοποιήσω και στον controller
-export const UPLOAD_DIR = path.join(__dirname, '../uploads');
+export const UPLOAD_DIR = path.join(__dirname, '../../uploads');
 
 // μέθοδος που δημιουργεί έναν τρόπο αποθήκευσης αρχείων στο δίσκο (στον υπολογιστή). Με αυτήν καθορίζουμε πού θα αποθηκευτεί το αρχείο και πώς θα ονομαστεί.
 const storage = multer.diskStorage({

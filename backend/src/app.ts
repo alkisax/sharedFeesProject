@@ -15,6 +15,7 @@ import authRoutes from './login/routes/auth.routes';
 import userRoutes from './login/routes/user.routes';
 import billRoutes from './bill//routes/bill.routes'
 import globalBillRoutes from './bill/routes/globalBill.routes'
+import excelRoutes from './xlsxParser/excel.routes'
 
 const app = express();
 
@@ -128,6 +129,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/bills', billRoutes)
 app.use('/api/global-bills', globalBillRoutes)
+app.use('/api/excel', excelRoutes)
 
 // app.use('/api/email', emailRoutes);
 
