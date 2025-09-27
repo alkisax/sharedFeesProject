@@ -29,7 +29,7 @@ const options = {
     },
     components: {
       schemas: {
-        // User: m2s(User),
+        User: m2s(User),
         Multer: m2s(Upload),
       },
       securitySchemes: {
