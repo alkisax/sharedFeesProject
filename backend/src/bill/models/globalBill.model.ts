@@ -24,6 +24,11 @@ const globalBillSchema = new Schema<IGlobalBill>(
       type: Number,
       required: [true, "total is required"],
     },
+    status: {
+      type: String,
+      enum: ["OPEN", "COMPLETE"],  // OPEN = some bills pending, COMPLETE = all paid
+      default: "OPEN",
+    }
   },
   {
     collection: "global_bills",

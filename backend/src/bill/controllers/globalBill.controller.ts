@@ -45,6 +45,17 @@ export const readGlobalById = async (req: Request, res: Response) => {
   }
 }
 
+// read only OPEN global bills
+export const findOpenGlobal = async (_req: Request, res: Response) => {
+  try {
+    const bills = await globalBillDAO.readByFilter({ status: "OPEN" });
+    return res.status(200).json({ status: true, data: bills });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+};
+
+
 // update global bill
 export const updateGlobalById = async (req: Request, res: Response) => {
   try {
@@ -80,6 +91,7 @@ export const globalBillController = {
   createGlobalBill,
   findAllGlobal,
   readGlobalById,
+  findOpenGlobal,
   updateGlobalById,
   deleteGlobalById
 }

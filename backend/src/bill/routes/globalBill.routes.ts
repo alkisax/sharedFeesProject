@@ -8,14 +8,17 @@ import { middleware } from '../../login/middleware/verification.middleware'
 router.post( '/', middleware.verifyToken, middleware.checkRole('ADMIN'),  globalBillController.createGlobalBill )
 
 // read
-router.get( '/', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.findAllGlobal )
+router.get( '/', middleware.verifyToken, globalBillController.findAllGlobal )
 
-router.get( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.readGlobalById )
+router.get( '/:id', middleware.verifyToken, globalBillController.readGlobalById )
 
 // update
 router.put( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.updateGlobalById )
 
 // delete
 router.delete( '/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), globalBillController.deleteGlobalById )
+
+// read only open
+router.get( '/status/open', middleware.verifyToken,middleware.checkRole("ADMIN"),globalBillController.findOpenGlobal );
 
 export default router

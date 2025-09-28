@@ -7,12 +7,14 @@ export type BillStatus = "PENDING" | "PAID" | "APPROVED";
 
 // Αντιπροσωπεύει τον συνολικό/γενικό λογαριασμό της πολυκατοικίας για έναν μήνα
 // Δημιουργείται από τον διαχειριστή όταν γίνεται import από excel
+export type GlobalBillStatus = "OPEN" | "COMPLETE";
 export interface IGlobalBill {
   _id: Types.ObjectId;
   month: string;                // "YYYY-MM"
   building: string;             // e.g. "ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18"
   categories: Record<string, number>; // e.g. { "ΔΕΗ": 152, "Καθαριότητα": 65 }
   total: number;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +26,7 @@ export interface GlobalBillView {
   building: string;
   categories: Record<string, number>;
   total: number;
+  status: GlobalBillStatus;
   createdAt: Date;
   updatedAt: Date;
 }

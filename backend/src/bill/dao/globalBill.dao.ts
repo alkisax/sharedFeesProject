@@ -1,4 +1,4 @@
-import type { IGlobalBill, GlobalBillView, CreateGlobalBill } from "../types/bill.types";
+import type { IGlobalBill, GlobalBillView, CreateGlobalBill, GlobalBillStatus } from "../types/bill.types";
 import GlobalBill from "../models/globalBill.model";
 
 // Response DAO (safe to send to client)
@@ -9,6 +9,7 @@ export const toGlobalBillDAO = (bill: IGlobalBill): GlobalBillView => {
     building: bill.building,
     categories: bill.categories as Record<string, number>,
     total: bill.total,
+    status: bill.status as GlobalBillStatus,
     createdAt: bill.createdAt,
     updatedAt: bill.updatedAt,
   };
@@ -40,6 +41,10 @@ const readById = async (id: string): Promise<GlobalBillView> => {
   const bill = await GlobalBill.findById(id);
   if (!bill) throw new Error("GlobalBill not found");
   return toGlobalBillDAO(bill as IGlobalBill);
+};
+
+const readByFilter = async (filter: Record<string, unknown>) => {
+  return GlobalBill.find(filter).lean();
 };
 
 // Internal server-side access
@@ -75,6 +80,7 @@ export const globalBillDAO = {
   create,
   readAll,
   readById,
+  readByFilter,
   toServerById,
   update,
   deleteById,
