@@ -86,7 +86,7 @@ import User from '../login/models/users.models'
             }
 
             // το τελευταίο κελί που είναι σύνολο
-            const amount = 
+            const amount =
               typeof row[headers.length - 1] === "number"
                 ? (row[headers.length - 1] as number)
                 : 0;
@@ -100,16 +100,16 @@ import User from '../login/models/users.models'
             }
 
             return {
-              userId: user._id, 
+              userId: user._id,
               globalBillId: globalBill._id,
               month: billMonth,
               building,
               flat,
               ownerName,
               share,
-              breakdown,
-              amount,
-              status: "PENDING", // default status
+              breakdown,       // ✅ μόνο κατηγορίες εδώ
+              amount,          // ✅ ξεχωριστό πεδίο root
+              status: "UNPAID" // default status
             };
           })
       )).filter(Boolean); // πετάμε όσα return null

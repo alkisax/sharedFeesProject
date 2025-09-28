@@ -47,8 +47,8 @@ const billSchema = new Schema<IBill>(
     },
     status: {
       type: String,
-      enum: ["PENDING", "PAID", "APPROVED"], // TODO change approved to payed
-      default: "PENDING",
+      enum: ["UNPAID", "PENDING", "PAID", "CANCELED"],
+      default: "UNPAID",
     },
     receiptUrl: {
       type: String,

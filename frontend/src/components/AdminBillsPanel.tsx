@@ -11,42 +11,20 @@ import {
   Paper,
   Switch,
   FormControlLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
 } from "@mui/material";
 import axios from "axios";
 import { VariablesContext } from "../context/VariablesContext";
-
-interface GlobalBillType {
-  _id: string;
-  month: string;
-  building: string;
-  status: string; // π.χ. OPEN | COMPLETE
-  createdAt: string;
-}
-
-interface BillType {
-  _id: string;
-  flat: string;
-  ownerName: string;
-  breakdown: { amount: number; status: string };
-  globalBillId: string;
-}
+import type { GlobalBillType, BillType } from "../types/excel.types";
+import React from "react";
+import AdminBillsFooter from "./AdminBillsFooter";
 
 const AdminBillsPanel = () => {
   const { url } = useContext(VariablesContext);
 
   const [globalBills, setGlobalBills] = useState<GlobalBillType[]>([]);
   const [showAll, setShowAll] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [bills, setBills] = useState<BillType[]>([]);
-  const [selected, setSelected] = useState<GlobalBillType | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [billsMap, setBillsMap] = useState<Record<string, BillType[]>>({});
   const [loading, setLoading] = useState(false);
 
   const fetchGlobalBills = useCallback(async () => {
@@ -73,11 +51,15 @@ const AdminBillsPanel = () => {
         `${url}/api/bills`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // φιλτράρισμα με globalBillId
-      const filtered = res.data.data.filter(
-        (b) => b.globalBillId === globalId
-      );
-      setBills(filtered);
+
+      console.log("Fetched bills:", res.data.data);
+      console.log("Looking for globalId:", globalId);
+
+      const filtered = res.data.data.filter((b) => {
+        console.log("Bill globalBillId:", b.globalBillId, "===", globalId);
+        return b.globalBillId?.toString() === globalId.toString();
+      });
+      setBillsMap((prev) => ({ ...prev, [globalId]: filtered }));
     } catch (err) {
       console.error("Error fetching bills:", err);
     } finally {
@@ -89,10 +71,15 @@ const AdminBillsPanel = () => {
     fetchGlobalBills();
   }, [fetchGlobalBills]);
 
-  const handleOpen = (gb: GlobalBillType) => {
-    setSelected(gb);
-    fetchBillsForGlobal(gb._id);
-    setOpen(true);
+  const handleToggleExpand = (gb: GlobalBillType) => {
+    if (expanded === gb.id) {
+      setExpanded(null);
+    } else {
+      setExpanded(gb.id);
+      if (!billsMap[gb.id]) {
+        fetchBillsForGlobal(gb.id);
+      }
+    }
   };
 
   return (
@@ -128,42 +115,31 @@ const AdminBillsPanel = () => {
             {globalBills
               .filter((g) => showAll || g.status !== "COMPLETE")
               .map((g) => (
-                <TableRow
-                  key={g._id}
-                  hover
-                  sx={{ cursor: "pointer" }}
-                  onClick={() => handleOpen(g)}
-                >
-                  <TableCell>{g.month}</TableCell>
-                  <TableCell>{g.building}</TableCell>
-                  <TableCell>{g.status}</TableCell>
-                  <TableCell>
-                    {new Date(g.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
+                <React.Fragment key={g.id}>
+                  <TableRow
+                    hover
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => handleToggleExpand(g)}
+                  >
+                    <TableCell>{g.month}</TableCell>
+                    <TableCell>{g.building}</TableCell>
+                    <TableCell>{g.status}</TableCell>
+                    <TableCell>
+                      {new Date(g.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+
+                  {expanded === g.id && (
+                    <AdminBillsFooter
+                      bills={billsMap[g.id] || []}
+                      colSpan={4}
+                    />
+                  )}
+                </React.Fragment>
               ))}
           </TableBody>
         </Table>
       </TableContainer>
-
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Bills for {selected?.month}</DialogTitle>
-        <DialogContent dividers>
-          <List dense>
-            {bills.map((b) => (
-              <ListItem key={b._id}>
-                <ListItemText
-                  primary={`${b.flat} - ${b.ownerName}`}
-                  secondary={`Amount: ${b.breakdown.amount} | Status: ${b.breakdown.status}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 };

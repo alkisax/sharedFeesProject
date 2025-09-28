@@ -34,7 +34,7 @@ const create = async (billData: CreateBill): Promise<BillView> => {
     share: billData.share,
     breakdown: billData.breakdown,
     amount: billData.amount,
-    status: billData.status ?? 'PENDING',
+    status: billData.status ?? 'UNPAID',
     receiptUrl: billData.receiptUrl,
     notes: billData.notes
   })

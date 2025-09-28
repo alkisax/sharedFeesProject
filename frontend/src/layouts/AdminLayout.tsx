@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from '../components/AdmniSidebar';
 import AdminExcelUploadPanel from '../components/AdminExcelUploadPanel'
+import AdminBillsPanel from '../components/AdminBillsPanel'
 
 const AdminLayout = () => {
   const [activePanel, setActivePanel] = useState("start");
@@ -13,7 +14,7 @@ const AdminLayout = () => {
 
         {activePanel === "start" && <p>Start panel selected</p>}
         {activePanel === "excel" && <AdminExcelUploadPanel />}
-
+        {activePanel === "bills" && <AdminBillsPanel />}
 
         <Outlet />
 

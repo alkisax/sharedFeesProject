@@ -1,7 +1,8 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar } from "@mui/material";
+import { useState } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
-import { useState } from "react";
+import ApartmentIcon from '@mui/icons-material/Apartment';
 
 interface Props {
   onSelect: (panel: string) => void;
@@ -51,6 +52,18 @@ const AdminSidebar = ({ onSelect }: Props) => {
               <FileUploadIcon /> 
             </ListItemIcon>
             <ListItemText primary="Excel Upload" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={active === "bills"}
+            onClick={() => handleSelect("bills")}
+          >
+            <ListItemIcon>
+              <ApartmentIcon /> 
+            </ListItemIcon>
+            <ListItemText primary="Bills" />
           </ListItemButton>
         </ListItem>
 

@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export type BillStatus = "PENDING" | "PAID" | "APPROVED";
+export type BillStatus = "UNPAID" | "PENDING" | "PAID" | "CANCELED";
 // Τύπος που δείχνει την κατάσταση του λογαριασμού (σε εκκρεμότητα, πληρωμένος, εγκρίθηκε από διαχειριστή)
 
 // ------------------- Building-level -------------------

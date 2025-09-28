@@ -64,7 +64,7 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ status: false, message: 'Forbidden: Cannot update other users bills' })
     }
 
-    const updated = await billDAO.update(billId, { status: 'PAID' })
+    const updated = await billDAO.update(billId, { status: 'PENDING' })
     return res.status(200).json({ status: true, data: updated })
   } catch (error) {
     return handleControllerError(res, error)
@@ -79,12 +79,26 @@ export const approveBill = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ status: false, message: 'Bill ID is required' })
     }
 
-    const updated = await billDAO.update(billId, { status: 'APPROVED' })
+    const updated = await billDAO.update(billId, { status: 'PAID' })
     return res.status(200).json({ status: true, data: updated })
   } catch (error) {
     return handleControllerError(res, error)
   }
 }
+
+// cancel bill
+export const cancelBill = async (req: AuthRequest, res: Response) => {
+  try {
+    const billId = req.params.id;
+    if (!billId) return res.status(400).json({ status: false, message: 'Bill ID is required' });
+
+    const updated = await billDAO.update(billId, { status: 'CANCELED' });
+    return res.status(200).json({ status: true, data: updated });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+};
+
 
 // update bill (admin use)
 export const updateBillById = async (req: Request, res: Response) => {
@@ -124,5 +138,6 @@ export const billController = {
   markBillAsPaid,
   approveBill,
   updateBillById,
+  cancelBill,
   deleteBillById
 }
