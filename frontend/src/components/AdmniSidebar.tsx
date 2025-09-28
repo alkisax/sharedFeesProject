@@ -1,5 +1,6 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useState } from "react";
 
 interface Props {
@@ -47,7 +48,7 @@ const AdminSidebar = ({ onSelect }: Props) => {
             onClick={() => handleSelect("excel")}
           >
             <ListItemIcon>
-              <UploadIcon /> {/* already imported earlier */}
+              <FileUploadIcon /> 
             </ListItemIcon>
             <ListItemText primary="Excel Upload" />
           </ListItemButton>

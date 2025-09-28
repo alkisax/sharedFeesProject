@@ -36,6 +36,7 @@ import { handleControllerError } from '../utils/error/errorHandler';
         },
       });
     } catch (error) {
+      console.error("Excel upload error:", error);
       return handleControllerError(res, error);
     }
   }

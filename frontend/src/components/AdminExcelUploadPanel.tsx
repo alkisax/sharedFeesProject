@@ -12,8 +12,8 @@ import {
   TableBody,
   Paper,
 } from "@mui/material";
-import { VariablesContext } from "../../context/VariablesContext";
-import type { ExcelResponse, ExcelRow } from "../../types/excel.types";
+import { VariablesContext } from '../context/VariablesContext';
+import type { ExcelResponse, ExcelRow } from "../types/excel.types";
 
 const AdminExcelUploadPanel = () => {
   const { url } = useContext(VariablesContext);
@@ -49,33 +49,126 @@ const AdminExcelUploadPanel = () => {
     }
   };
 
-  const renderTable = (title: string, rows: ExcelRow[]) => (
-    <Box mt={3}>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Paper sx={{ overflowX: "auto" }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              {rows[0]?.map((_, idx) => (
-                <TableCell key={idx}>Col {idx + 1}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row, rIdx) => (
-              <TableRow key={rIdx}>
-                {row.map((cell, cIdx) => (
-                  <TableCell key={cIdx}>{cell ?? "-"}</TableCell>
+  const renderGlobalInfoTable = (rows: ExcelRow[]) => {
+    if (rows.length === 0) return null;
+
+    const header = rows[0][0] as string;
+    const dataRows = rows.slice(1).map((row) =>
+      row.filter((_, idx) => idx !== 1)
+    );
+
+    return (
+      <Box mt={3}>
+        <Typography variant="h6" gutterBottom>
+          {header}
+        </Typography>
+        <Paper sx={{ overflowX: "auto" }}>
+          <Table size="small">
+            <TableBody>
+              {dataRows.map((row, rIdx) => {
+                const isTotalRow = row.some(
+                  (cell) =>
+                    typeof cell === "string" &&
+                    cell.toLowerCase().includes("συνολο")
+                );
+
+                return (
+                  <TableRow
+                    key={rIdx}
+                    sx={{
+                      backgroundColor: isTotalRow
+                        ? "#E6E6FA" // pastel lavender for totals
+                        : rIdx % 2 === 0
+                        ? "#FFFFFF" // zebra white
+                        : "#FAFAFA", // zebra light grey
+                    }}
+                  >
+                    {row.map((cell, cIdx) => (
+                      <TableCell
+                        key={cIdx}
+                        sx={{ fontSize: "0.85rem", py: 0.5 }}
+                      >
+                        {cell ?? "-"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
+      </Box>
+    );
+  };
+
+  const renderUserBillsTable = (rows: ExcelRow[]) => {
+    if (rows.length === 0) return null;
+
+    // first row = headers
+    const headers = rows[0] as string[];
+    // rest = data
+    const dataRows = rows.slice(1);
+
+    return (
+      <Box mt={3}>
+        <Typography variant="h6" gutterBottom>
+          User Bills
+        </Typography>
+        <Paper sx={{ overflowX: "auto" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#FFF9C4" /* retro yellow */ }}>
+                {headers.map((h, idx) => (
+                  <TableCell
+                    key={idx}
+                    sx={{ fontWeight: "bold", fontSize: "0.9rem" }}
+                  >
+                    {h}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
-    </Box>
-  );
+            </TableHead>
+            <TableBody>
+              {dataRows.map((row, rIdx) => {
+                // ✅ Detect "ΣΥΝΟΛΟ" or "ΣΥΝΟΛΑ" in any column
+                const isTotalRow = row.some(
+                  (cell) =>
+                    typeof cell === "string" &&
+                    cell.trim().toLowerCase().startsWith("συνο")
+                );
+
+                return (
+                  <TableRow
+                    key={rIdx}
+                    sx={{
+                      backgroundColor: isTotalRow
+                        ? "#E6E6FA" // pastel lavender highlight
+                        : rIdx % 2 === 0
+                        ? "#FFFFFF" // zebra white
+                        : "#FAFAFA", // zebra grey
+                    }}
+                  >
+                    {row.map((cell, cIdx) => (
+                      <TableCell
+                        key={cIdx}
+                        sx={{
+                          fontSize: "0.85rem",
+                          py: 0.5,
+                          fontWeight: isTotalRow ? "bold" : "normal", // bold totals
+                        }}
+                      >
+                        {cell ?? "-"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
+      </Box>
+    );
+  };
 
   return (
     <Box>
@@ -105,10 +198,11 @@ const AdminExcelUploadPanel = () => {
           </Typography>
 
           {result.data?.globalInfo &&
-            renderTable("Global Info", result.data.globalInfo)}
+            renderGlobalInfoTable(result.data.globalInfo)}
 
           {result.data?.userBills &&
-            renderTable("User Bills", result.data.userBills)}
+            renderUserBillsTable(result.data.userBills)}
+
 
           {!result.data && (
             <pre

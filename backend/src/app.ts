@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
  
 import express from 'express';
-// import cors from 'cors';
+import cors from 'cors';
 import type { Request, Response } from 'express';
 import path from 'path';
 import swaggerSpec from './utils/swagger';
@@ -26,7 +26,7 @@ const app = express();
 //   'https://cloud.appwrite.io', 
 // ];
 
-// app.use(cors());
+app.use(cors());
 // app.use(
 //   cors({
 //     origin: (origin, cb) => {

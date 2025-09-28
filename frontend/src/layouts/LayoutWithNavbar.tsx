@@ -9,8 +9,11 @@ const LayoutWithNavbar = () => {
       flexDirection: "column",
       minHeight: "100vh"
     }}>
-      <Navbar />
-      <Box sx={{ flexGrow: 1 }}>
+      {/* εδω είναι το navbar  και απο κάτω το υπόλοιπο περιεχόμενο της σελιδας */}
+      <Navbar />  
+      <Box
+        sx={{ flexGrow: 1 }} // style extensions → όλο τον οριζόντιο χώρο
+      >
         <Outlet />
       </Box>
     </Box>
