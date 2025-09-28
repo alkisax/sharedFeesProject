@@ -35,10 +35,10 @@ const billSchema = new Schema<IBill>(
       type: Number,
       required: false, // Χιλιοστά
     },
-    // Map-like object with per-category breakdown for this flat
+    // object with per-category breakdown for this flat
     breakdown: {
-      type: Map,
-      of: Number,
+      type: Object,
+      required: true,
       default: {},
     },
     amount: {
@@ -47,7 +47,7 @@ const billSchema = new Schema<IBill>(
     },
     status: {
       type: String,
-      enum: ["PENDING", "PAID", "APPROVED"],
+      enum: ["PENDING", "PAID", "APPROVED"], // TODO change approved to payed
       default: "PENDING",
     },
     receiptUrl: {

@@ -14,7 +14,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, 
       required: false,
       unique: true,
-      sparse: true  // allow duplycate nulls
+      sparse: true  // allow duplicate nulls
     },
     phone: [{ type: String }],
     AFM: { type: String },
