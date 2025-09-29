@@ -1,0 +1,113 @@
+openapi: 3.0.3
+info:
+  title: Shared Fees – Excel Parsing API
+  version: 1.0.0
+  description: |
+    Endpoints for uploading an Excel file and returning parsed ranges as arrays.
+    The API responds in the format `{ status: boolean, message: string, data?: object }`.
+
+servers:
+  - url: http://localhost:3001
+    description: Local dev
+
+tags:
+  - name: Excel
+    description: Upload and parse Excel files
+
+paths:
+  /api/excel/upload:
+    post:
+      tags: [Excel]
+      summary: Upload an Excel file and parse predefined ranges
+      description: |
+        Accepts a `.xlsx` or `.xls` file via multipart/form-data (field name: `file`),
+        parses the first worksheet using environment-defined ranges, and returns two arrays:
+        - `globalInfo` (e.g., range `D6:F13`)
+        - `userBills` (e.g., range `A15:K26`)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  description: Excel file to parse (.xlsx or .xls)
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Excel parsed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Excel parsed successfully
+                  data:
+                    type: object
+                    required: [globalInfo, userBills]
+                    properties:
+                      globalInfo:
+                        description: Array-of-rows extracted from the configured global range (e.g., D6:F13)
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            anyOf:
+                              - type: string
+                              - type: number
+                              - type: boolean
+                            nullable: true
+                        example:
+                          - ["Σύνολο", 123.45, "EUR"]
+                          - ["Μήνας", "2025-07", null]
+                      userBills:
+                        description: Array-of-rows extracted from the configured user range (e.g., A15:K26)
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            anyOf:
+                              - type: string
+                              - type: number
+                              - type: boolean
+                            nullable: true
+                        example:
+                          - ["apt_101", "DOE John", 45.2, null, 12, "water", null, null, 57.2, "EUR", "unpaid"]
+                          - ["apt_102", "SMITH Jane", 39.8, null, 10, "water", null, null, 49.8, "EUR", "unpaid"]
+        "400":
+          description: Bad request (e.g., no file uploaded or invalid file type)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message]
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Only Excel files are allowed
+        "500":
+          description: Server error while parsing Excel
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message]
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Failed to parse Excel

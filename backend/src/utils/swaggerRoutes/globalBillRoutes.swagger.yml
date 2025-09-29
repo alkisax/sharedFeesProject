@@ -1,0 +1,263 @@
+components:
+  schemas:
+    GlobalBill:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 64f9c2c9d5c3a01234567890
+        month:
+          type: string
+          example: '2025-07'
+        building:
+          type: string
+          example: 'ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18'
+        categories:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            ΔΕΗ: 152
+            Καθαριότητα: 65
+            Ασανσέρ: 57.49
+        total:
+          type: number
+          example: 299.54
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-07-01T12:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-07-01T12:00:00Z'
+
+    Bill:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 64f9c2c9d5c3a01234567890
+        userId:
+          type: string
+          example: 64f9c2c9d5c3a0987654321
+        globalBillId:
+          type: string
+          example: 64f9c2c9d5c3a01234567890
+        month:
+          type: string
+          example: '2025-07'
+        building:
+          type: string
+          example: 'ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18'
+        flat:
+          type: string
+          example: 'ΙΣ'
+        ownerName:
+          type: string
+          example: 'Δρακοπούλου'
+        share:
+          type: number
+          example: 99.7
+        breakdown:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            ΔΕΗ: 15.15
+            Καθαριότητα: 6.48
+            Ασανσέρ: 3.11
+        amount:
+          type: number
+          example: 27.25
+        status:
+          type: string
+          enum: [PENDING, PAID, APPROVED]
+          example: PENDING
+        receiptUrl:
+          type: string
+          example: 'https://appwrite.io/storage/receipt123.pdf'
+        notes:
+          type: array
+          items:
+            type: string
+          example: ['Πληρώθηκε μετρητά']
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-07-01T12:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-07-01T12:00:00Z'
+
+paths:
+  /api/global-bills:
+    post:
+      summary: Create a new Global Bill
+      tags:
+        - GlobalBills
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month, building, categories, total]
+              properties:
+                month:
+                  type: string
+                  example: '2025-07'
+                building:
+                  type: string
+                  example: 'ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18'
+                categories:
+                  type: object
+                  additionalProperties:
+                    type: number
+                  example:
+                    ΔΕΗ: 152
+                    Καθαριότητα: 65
+                total:
+                  type: number
+                  example: 299.54
+      responses:
+        '201':
+          description: Global bill created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/GlobalBill'
+        '400':
+          description: Missing required fields
+        '500':
+          description: Server error
+
+    get:
+      summary: Get all Global Bills
+      tags:
+        - GlobalBills
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of global bills
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GlobalBill'
+
+  /api/global-bills/{id}:
+    get:
+      summary: Get a Global Bill by ID
+      tags:
+        - GlobalBills
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Global bill found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalBill'
+        '400':
+          description: Invalid request
+        '404':
+          description: Not found
+
+    put:
+      summary: Update a Global Bill
+      tags:
+        - GlobalBills
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                month:
+                  type: string
+                  example: '2025-08'
+                building:
+                  type: string
+                  example: 'ΠΟΛΥΚΑΤΟΙΚΙΑ ΚΑΤΕΡΙΝΗΣ 18'
+                categories:
+                  type: object
+                  additionalProperties:
+                    type: number
+                  example:
+                    ΔΕΗ: 200
+                total:
+                  type: number
+                  example: 350.0
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalBill'
+        '400':
+          description: Invalid request
+        '404':
+          description: Not found
+
+    delete:
+      summary: Delete a Global Bill
+      tags:
+        - GlobalBills
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: string
+                    example: 'GlobalBill deleted'
+        '404':
+          description: Not found
