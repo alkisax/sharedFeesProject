@@ -31,8 +31,8 @@ router.get('/:id/balance', middleware.verifyToken, middleware.checkRole('ADMIN')
 // endpoint for getting *own* balance (self)
 router.get('/me/balance', middleware.verifyToken, userController.getMyBalance)
 
-// get by id (admin only)
-router.get('/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), userController.readById)
+// get by id (self or admin only)
+router.get('/:id', middleware.verifyToken, middleware.checkSelfOrAdmin, userController.readById)
 
 // ------------------ update ------------------
 
