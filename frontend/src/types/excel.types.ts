@@ -23,11 +23,20 @@ export interface GlobalBillType {
 }
 
 export interface BillType {
-  _id: string;
+  id: string;
+  userId: string;
+  globalBillId: string;
+  month: string;
+  building: string;
   flat: string;
   ownerName: string;
-  globalBillId: string;
-  amount: number;
-  status: "UNPAID" | "PENDING" | "PAID" | "CANCELED";
+  share?: number;
   breakdown: Record<string, number>;
+  amount: number;
+  status: 'UNPAID' | 'PENDING' | 'PAID' | 'CANCELED';
+  notes?: string[];
+  receiptUrl?: string;       // optional, for upload link
+  createdAt?: string;
+  updatedAt?: string;
 }
+

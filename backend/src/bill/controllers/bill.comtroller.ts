@@ -4,7 +4,7 @@ import { billDAO } from '../dao/bill.dao'
 
 import type { Request, Response } from 'express'
 import type { AuthRequest } from '../../login/types/user.types'
-import type { CreateBill, UpdateBill } from '../types/bill.types'
+import type { CreateBill, IBill, UpdateBill } from '../types/bill.types'
 
 // create user-level bill
 export const createBill = async (req: Request, res: Response) => {
@@ -51,6 +51,8 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user
     const billId = req.params.id
+    const { receiptUrl } = req.body;
+
     if (!user) {
       return res.status(401).json({ status: false, message: 'Unauthorized' })
     }
@@ -64,8 +66,13 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ status: false, message: 'Forbidden: Cannot update other users bills' })
     }
 
-    const updated = await billDAO.update(billId, { status: 'PENDING' })
-    return res.status(200).json({ status: true, data: updated })
+    const update: Partial<IBill> = { status: 'PENDING' };
+    if (receiptUrl) {
+      update.receiptUrl = receiptUrl;
+    }
+
+    const updated = await billDAO.update(billId, update);
+    return res.status(200).json({ status: true, data: updated });
   } catch (error) {
     return handleControllerError(res, error)
   }
