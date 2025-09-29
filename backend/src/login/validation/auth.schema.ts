@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // in auth controller
 export const loginSchema = z.object({
-  username: z.string().min(3).max(50),
+  username: z.string().min(1).max(50),
   password: z.string().min(6).max(128),
 });
 

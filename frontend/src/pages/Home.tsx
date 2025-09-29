@@ -1,19 +1,31 @@
-import { Button } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Box } from "@mui/material";
+import ApartmentImg from "../assets/norman.png";
 
 const Home = () => {
   return (
-    <div>
-      <h1>Home</h1>
-      <Button
-        component={Link}
-        to="/admin"
-        variant="contained"
-        color="primary"
+    <Box sx={{ mt: 2 }}>
+      {/* Image container */}
+      <Box
+        sx={{
+          width: { xs: "100%", md: "40%" },
+          mx: "auto",
+          height: 450, // fixed bar height, crop overflow
+          overflow: "hidden",
+          borderRadius: 2,
+        }}
       >
-        Admin Dashboard
-      </Button>
-    </div>
+        <Box
+          component="img"
+          src={ApartmentImg}
+          alt="Apartment building"
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover", // crop but don't distort
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 
