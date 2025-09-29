@@ -3,6 +3,7 @@ import { useState } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ApartmentIcon from '@mui/icons-material/Apartment';
+import PeopleIcon from '@mui/icons-material/People';
 
 interface Props {
   onSelect: (panel: string) => void;
@@ -64,6 +65,17 @@ const AdminSidebar = ({ onSelect }: Props) => {
               <ApartmentIcon /> 
             </ListItemIcon>
             <ListItemText primary="Bills" />
+          </ListItemButton>
+        </ListItem>
+
+
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={active === "users"}
+            onClick={() => handleSelect("users")}
+          >
+            <ListItemIcon><PeopleIcon /></ListItemIcon>
+            <ListItemText primary="Users" />
           </ListItemButton>
         </ListItem>
 
