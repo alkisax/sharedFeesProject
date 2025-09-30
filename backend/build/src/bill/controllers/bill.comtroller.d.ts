@@ -1,0 +1,20 @@
+import type { Request, Response } from 'express';
+import type { AuthRequest } from '../../login/types/user.types';
+export declare const createBill: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const findAllBills: (_req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const findMyBills: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const markBillAsPaid: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const approveBill: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const cancelBill: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const updateBillById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const deleteBillById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const billController: {
+    createBill: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+    findAllBills: (_req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+    findMyBills: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+    markBillAsPaid: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+    approveBill: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+    updateBillById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+    cancelBill: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+    deleteBillById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
+};

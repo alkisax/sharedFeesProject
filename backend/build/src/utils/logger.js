@@ -1,6 +1,6 @@
+"use strict";
 // import { createLogger, format, transports } from 'winston';
 // // import 'winston-mongodb';
-
 // const logger = createLogger({
 //   format: format.combine(
 //     format.timestamp(),
@@ -8,11 +8,9 @@
 //   ),
 //   transports: [
 //     // new transports.Console(), // show logs in terminal
-
 //     new transports.File({      // save to file
 //       filename: 'logs/all.log'
 //     }),
-
 //     // new transports.MongoDB({   // save to MongoDB
 //     //   db: process.env.MONGODB_URI || 'mongodb://localhost:27017/logsdb',
 //     //   collection: 'logs',
@@ -20,5 +18,5 @@
 //     // })
 //   ]
 // });
-
 // export default logger;
+//# sourceMappingURL=logger.js.map

@@ -7,27 +7,14 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import yaml from 'yamljs';
 import path from 'path';
 
-const userRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'userRoutes.swagger.yml')
-);
-const authRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'authRoutes.swagger.yml')
-);
-// const emailRoutesDocs = yaml.load(
-//   path.join(__dirname, 'swaggerRoutes', 'emailRoutes.swagger.yml')
-// );
-const uploadMulterRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'uploadMulterRoutes.swagger.yml' )
-);
-const globalBillRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'globalBillRoutes.swagger.yml' )
-);
-const billRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'billRoutes.swagger.yml' )
-);
-const excelRoutesDocs = yaml.load(
-  path.join(__dirname, 'swaggerRoutes', 'excelRoutes.swagger.yml' )
-);
+const swaggerBase = path.join(process.cwd(), "src/utils/swaggerRoutes");
+
+const userRoutesDocs = yaml.load(path.join(swaggerBase, 'userRoutes.swagger.yml'));
+const authRoutesDocs = yaml.load(path.join(swaggerBase, 'authRoutes.swagger.yml'));
+const uploadMulterRoutesDocs = yaml.load(path.join(swaggerBase, 'uploadMulterRoutes.swagger.yml'));
+const globalBillRoutesDocs = yaml.load(path.join(swaggerBase, 'globalBillRoutes.swagger.yml'));
+const billRoutesDocs = yaml.load(path.join(swaggerBase, 'billRoutes.swagger.yml'));
+const excelRoutesDocs = yaml.load(path.join(swaggerBase, 'excelRoutes.swagger.yml'));
 
 
 const options = {
@@ -62,11 +49,9 @@ const options = {
       ...globalBillRoutesDocs.paths,
       ...billRoutesDocs.paths,
       ...excelRoutesDocs.paths,
-    },  },
+    },  
+  },
   apis: []
-  // δεν το χρησιμοποιούμε αυτό γιατι εχουν μεταφερθεί τα swagger docs στo yaml αρχειο
-  // 👇 This is the critical part: tell swagger-jsdoc where to find your route/controller annotations
-  // apis: ['./routes/*.js', './controllers/*.js'], // adjust paths if needed
 };
 
 const swaggerSpec = swaggerJsdoc(options);
