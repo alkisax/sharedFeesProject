@@ -37,6 +37,7 @@ export interface CreateGlobalBill {
   building: string;
   categories: Record<string, number>;
   total: number;
+  status?: GlobalBillStatus;
 }
 
 // ------------------- User-level -------------------

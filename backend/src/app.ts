@@ -144,14 +144,23 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ΠΡΟΣΟΧΗ το ../ στο path είναι συμαντικο. τα αρχεια μας βρίσκονται τελικά στον φάκελο dist
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// για να σερβίρει τον φακελο dist του front μετα το npm run build
-// app.use(express.static('dist'));
-app.use(express.static(path.join(__dirname, '../../dist')));
+// // για να σερβίρει τον φακελο dist του front μετα το npm run build
+// // app.use(express.static('dist'));
+// app.use(express.static(path.join(__dirname, '../../dist')));
 
-//αυτο είναι για να σερβίρει το index.html του front όταν ο χρήστης επισκέπτεται το root path ή οποιοδήποτε άλλο path που δεν είναι api ή api-docs
+// //αυτο είναι για να σερβίρει το index.html του front όταν ο χρήστης επισκέπτεται το root path ή οποιοδήποτε άλλο path που δεν είναι api ή api-docs
+// app.get(/^\/(?!api|api-docs).*/, (_req, res) => {
+//   // res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+//   res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
+// });
+// run into problems and changed this 👆🏼 to this 👇🏼
+// serve frontend build from public/
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get(/^\/(?!api|api-docs).*/, (_req, res) => {
-  // res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
-  res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
+
 
 export default app;

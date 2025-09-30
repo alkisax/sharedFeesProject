@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
 import { handleControllerError } from '../../utils/error/errorHandler'
 import { billDAO } from '../dao/bill.dao'
-import User from '../../login/models/users.models'
+// import User from '../../login/models/users.models'
 
 import type { Request, Response } from 'express'
 import type { AuthRequest } from '../../login/types/user.types'
 import type { CreateBill, IBill, UpdateBill } from '../types/bill.types'
+import { userDAO } from '../../login/dao/user.dao'
 
 // create user-level bill
 export const createBill = async (req: Request, res: Response) => {
@@ -97,12 +98,10 @@ export const approveBill = async (req: AuthRequest, res: Response) => {
     const updated = await billDAO.update(billId, { status: "PAID" });
 
     // credit back to user balance
-    // db actions should be in dao TODO
-    await User.findByIdAndUpdate(
-      bill.userId,
-      { $inc: { balance: Math.abs(bill.amount) } }, // ✅ add back amount
-      { new: true }
-    );
+    // db actions should be in dao ✅
+    // credit back to user balance
+    await userDAO.incrementBalance(bill.userId.toString(), Math.abs(bill.amount));
+
 
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {

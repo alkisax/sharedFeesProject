@@ -94,8 +94,8 @@ const AdminBillsPanel = () => {
   };
 
   const getRowColor = (bills: BillType[]): string => {
-    if (bills.some((b) => b.status === 'UNPAID')) return '#ffe5e5'; // light red
     if (bills.some((b) => b.status === 'PENDING')) return '#e5f0ff'; // light blue
+    if (bills.some((b) => b.status === 'UNPAID')) return '#ffe5e5'; // light red
     if (bills.length > 0 && bills.every((b) => b.status === 'PAID')) return '#e5ffe5'; // light green
     return 'inherit';
   };

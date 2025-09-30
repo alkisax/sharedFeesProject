@@ -22,12 +22,28 @@ const create = async (billData: CreateGlobalBill): Promise<GlobalBillView> => {
     building: billData.building,
     categories: billData.categories,
     total: billData.total,
+    status: billData.status ?? "OPEN",
   });
 
   const response = await bill.save();
   if (!response) throw new Error("Error saving global bill");
 
   return toGlobalBillDAO(response as IGlobalBill);
+};
+
+const createServerSide = async (billData: CreateGlobalBill): Promise<IGlobalBill> => {
+  const bill = new GlobalBill({
+    month: billData.month,
+    building: billData.building,
+    categories: billData.categories,
+    total: billData.total,
+    status: billData.status ?? "OPEN",
+  });
+
+  const response = await bill.save();
+  if (!response) throw new Error("Error saving global bill");
+
+  return response as IGlobalBill; // raw model
 };
 
 // Read all GlobalBills
@@ -78,6 +94,7 @@ const deleteById = async (id: string): Promise<GlobalBillView> => {
 export const globalBillDAO = {
   toGlobalBillDAO,
   create,
+  createServerSide,
   readAll,
   readById,
   readByFilter,
