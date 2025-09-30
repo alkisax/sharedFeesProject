@@ -155,12 +155,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // });
 // run into problems and changed this 👆🏼 to this 👇🏼
 // serve frontend build from public/
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.get(/^\/(?!api|api-docs).*/, (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
-
-
 
 export default app;
