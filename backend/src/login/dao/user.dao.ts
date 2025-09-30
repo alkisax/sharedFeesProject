@@ -126,6 +126,23 @@ const deleteById = async (userId: string): Promise<UserView> => {
   return toUserDAO(response as IUser)
 }
 
+// Increment user balance by a given amount
+const incrementBalance = async (userId: string, amount: number) => {
+  const response = await User.findByIdAndUpdate(
+    userId,
+    { $inc: { balance: amount } },
+    { new: true }
+  );
+  if (!response) throw new Error('User not found');
+  return toUserDAO(response as IUser);
+};
+
+// Find user by building + flat (server-side, raw model)
+const toServerByBuildingAndFlat = async (building: string, flat: string): Promise<IUser | null> => {
+  const user = await User.findOne({ building, flat });
+  return user ? (user as IUser) : null;
+};
+
 export const userDAO = {
   toUserDAO,
   create,
@@ -137,5 +154,7 @@ export const userDAO = {
   toServerByUsername,
   update,
   toggleRoleById,
-  deleteById
+  deleteById,
+  incrementBalance,
+  toServerByBuildingAndFlat
 }

@@ -3,9 +3,11 @@ import { Request, Response } from "express";
 import { parseExcel } from './excelParser'
 import path from "path";
 import { handleControllerError } from '../utils/error/errorHandler';
-import GlobalBill from '../bill/models/globalBill.model';
+// import GlobalBill from '../bill/models/globalBill.model';
 import Bill from '../bill/models/bill.model'
 import User from '../login/models/users.models'
+import { globalBillDAO } from "../bill/dao/globalBill.dao";
+import { userDAO } from "../login/dao/user.dao";
 
   const uploadExcel = async (req: Request, res: Response) => {
     try {
@@ -51,8 +53,8 @@ import User from '../login/models/users.models'
       }
 
       // 3️⃣ Save GlobalBill to mongo
-      // αυτή είναι εντολή db και θα έρεπε να είναι σε dao TODO
-      const globalBill = await GlobalBill.create({
+      // αυτή είναι εντολή db και θα έρεπε να είναι σε dao ✅
+      const globalBill = await globalBillDAO.createServerSide({
         month: billMonth,
         building,
         categories,
@@ -92,8 +94,8 @@ import User from '../login/models/users.models'
                 : 0;
 
             // 💣 πριν προχωρήσουμε θα πρέπει να βρούμε τον user που αντιστοιχεί στον λογαριασμό
-            // αυτή είναι εντολή db και θα έρεπε να είναι σε dao TODO
-            const user = await User.findOne({ building, flat });
+            // αυτή είναι εντολή db και θα έρεπε να είναι σε dao ✅
+            const user = await userDAO.toServerByBuildingAndFlat(building, flat);
             if (!user) {
               console.warn(`No user found for flat ${flat}, building ${building}`);
               return null; // skip

@@ -88,6 +88,13 @@ const deleteById = async (id: string): Promise<BillView> => {
   return toBillDAO(response as IBill)
 }
 
+// Bulk insert Bills (server-side, returns raw IBill[])
+const insertManyServer = async (bills: Partial<IBill>[]): Promise<IBill[]> => {
+  if (!bills.length) return [];
+  const response = await Bill.insertMany(bills);
+  return response as IBill[];
+};
+
 export const billDAO = {
   toBillDAO,
   create,
@@ -96,5 +103,6 @@ export const billDAO = {
   readByUser,
   toServerById,
   update,
-  deleteById
+  deleteById,
+  insertManyServer
 }
