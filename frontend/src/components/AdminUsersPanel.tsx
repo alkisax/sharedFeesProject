@@ -12,6 +12,11 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
+export interface UserEditView extends UserView {
+  password?: string;
+  confirmPassword?: string;
+}
+
 const AdminUsersPanel = () => {
   const { isLoading } = useContext(UserAuthContext);
   const { url } = useContext(VariablesContext);
@@ -19,7 +24,7 @@ const AdminUsersPanel = () => {
   const [users, setUsers] = useState<UserView[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserView | null>(null);
   const [viewUser, setViewUser] = useState<UserView | null>(null);
-  const [editForm, setEditForm] = useState<Partial<UserView>>({});
+  const [editForm, setEditForm] = useState<Partial<UserEditView>>({});
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({
     username: "",
@@ -32,7 +37,6 @@ const AdminUsersPanel = () => {
     flat: "",
     AFM: "",
   });
-
 
   // fetch all users
   const fetchAllUsers = useCallback(async () => {
@@ -108,11 +112,25 @@ const AdminUsersPanel = () => {
   // save edits
   const handleSaveEdit = async () => {
     if (!selectedUser) return;
+
+    // ✅ check confirm password if provided
+    if (editForm.password && editForm.password !== editForm.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
+
+      // ✅ remove confirmPassword before sending, strip empty strings
+      const { confirmPassword, ...rest } = editForm;
+      const payload = Object.fromEntries(
+        Object.entries(rest).filter(([_, v]) => v !== "")
+      );
+
       const res = await axios.put(
         `${url}/api/users/${selectedUser.id}`,
-        editForm,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.data.status) {
@@ -137,7 +155,14 @@ const AdminUsersPanel = () => {
     }
 
     try {
-      const { confirmPassword, ...payload } = createForm; // ✅ exclude confirmPassword
+      const { confirmPassword, ...rest } = createForm; // ✅ exclude confirmPassword
+
+      // ✅ remove fields with empty strings
+      const payload = Object.fromEntries(
+        Object.entries(rest).filter(([_, v]) => v !== "")
+      );
+
+      console.log("Payload:", payload);
       const res = await axios.post(`${url}/api/users/signup/user`, payload);
 
       if (res.data.status) {
@@ -164,7 +189,6 @@ const AdminUsersPanel = () => {
     }
   };
 
-
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -184,7 +208,7 @@ const AdminUsersPanel = () => {
             <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Roles</TableCell>
+              <TableCell>Lastname</TableCell>
               <TableCell>Building</TableCell>
               <TableCell>Flat</TableCell>
               <TableCell>Balance (€)</TableCell>
@@ -202,7 +226,7 @@ const AdminUsersPanel = () => {
                 >
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.roles.join(", ")}</TableCell>
+                  <TableCell>{user.lastname}</TableCell>
                   <TableCell>{user.building}</TableCell>
                   <TableCell>{user.flat}</TableCell>
                   <TableCell>{user.balance ?? 0}</TableCell>
@@ -302,6 +326,28 @@ const AdminUsersPanel = () => {
                 value={editForm.flat || ""}
                 onChange={e => setEditForm({ ...editForm, flat: e.target.value })}
               />
+              {/* ✅ Balance field */}
+              <TextField
+                label="Balance (€)"
+                type="number"
+                value={editForm.balance ?? ""}
+                onChange={e =>
+                  setEditForm({ ...editForm, balance: Number(e.target.value) })
+                }
+              />
+              {/* ✅ New password fields */}
+              <TextField
+                label="New Password"
+                type="password"
+                value={editForm.password || ""}
+                onChange={e => setEditForm({ ...editForm, password: e.target.value })}
+              />
+              <TextField
+                label="Confirm New Password"
+                type="password"
+                value={editForm.confirmPassword || ""}
+                onChange={e => setEditForm({ ...editForm, confirmPassword: e.target.value })}
+              />
               <Stack direction="row" justifyContent="flex-end" spacing={2}>
                 <Button variant="outlined" onClick={() => setSelectedUser(null)}>Cancel</Button>
                 <Button variant="contained" onClick={handleSaveEdit}>Save</Button>
@@ -320,6 +366,7 @@ const AdminUsersPanel = () => {
               label="Username"
               value={createForm.username}
               onChange={e => setCreateForm({ ...createForm, username: e.target.value })}
+              helperText="Use English characters for the username"
             />
             <TextField
               label="Password"
@@ -352,11 +399,13 @@ const AdminUsersPanel = () => {
               label="Building"
               value={createForm.building}
               onChange={e => setCreateForm({ ...createForm, building: e.target.value })}
+              helperText="Must match Excel: English, no spaces (e.g. Katerinis14)"
             />
             <TextField
               label="Flat"
               value={createForm.flat}
               onChange={e => setCreateForm({ ...createForm, flat: e.target.value })}
+              helperText="Must match Excel exactly: Greek capital letters (e.g. Α1, ΙΣ)"
             />
             <TextField
               label="AFM"
@@ -371,6 +420,7 @@ const AdminUsersPanel = () => {
         </DialogContent>
       </Dialog>
 
+
       {/* View More Modal */}
       <Dialog open={!!viewUser} onClose={() => setViewUser(null)} maxWidth="sm" fullWidth>
         <DialogTitle>User Details</DialogTitle>
@@ -383,6 +433,7 @@ const AdminUsersPanel = () => {
               <Typography><b>Roles:</b> {viewUser.roles.join(", ")}</Typography>
               <Typography><b>Building:</b> {viewUser.building}</Typography>
               <Typography><b>Flat:</b> {viewUser.flat}</Typography>
+              <Typography><b>Balance:</b> {viewUser.balance ?? 0}</Typography>
             </Stack>
           )}
         </DialogContent>
