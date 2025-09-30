@@ -37,7 +37,7 @@ router.get('/:id', middleware.verifyToken, middleware.checkSelfOrAdmin, userCont
 // ------------------ update ------------------
 
 // update by id (self or admin)
-router.put('/:id', middleware.verifyToken, userController.updateById)
+router.put('/:id', middleware.verifyToken, middleware.checkSelfOrAdmin, userController.updateById)
 
 // toggle admin role
 router.put('/toggle-admin/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), userController.toggleRoleById)

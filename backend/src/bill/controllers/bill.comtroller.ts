@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 import { handleControllerError } from '../../utils/error/errorHandler'
 import { billDAO } from '../dao/bill.dao'
+import User from '../../login/models/users.models'
 
 import type { Request, Response } from 'express'
 import type { AuthRequest } from '../../login/types/user.types'
-import type { CreateBill, UpdateBill } from '../types/bill.types'
+import type { CreateBill, IBill, UpdateBill } from '../types/bill.types'
 
 // create user-level bill
 export const createBill = async (req: Request, res: Response) => {
@@ -51,6 +52,8 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user
     const billId = req.params.id
+    const { receiptUrl } = req.body;
+
     if (!user) {
       return res.status(401).json({ status: false, message: 'Unauthorized' })
     }
@@ -64,8 +67,13 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ status: false, message: 'Forbidden: Cannot update other users bills' })
     }
 
-    const updated = await billDAO.update(billId, { status: 'PENDING' })
-    return res.status(200).json({ status: true, data: updated })
+    const update: Partial<IBill> = { status: 'PENDING' };
+    if (receiptUrl) {
+      update.receiptUrl = receiptUrl;
+    }
+
+    const updated = await billDAO.update(billId, update);
+    return res.status(200).json({ status: true, data: updated });
   } catch (error) {
     return handleControllerError(res, error)
   }
@@ -74,17 +82,33 @@ export const markBillAsPaid = async (req: AuthRequest, res: Response) => {
 // approve bill (admin)
 export const approveBill = async (req: AuthRequest, res: Response) => {
   try {
-    const billId = req.params.id
+    const billId = req.params.id;
     if (!billId) {
-      return res.status(400).json({ status: false, message: 'Bill ID is required' })
+      return res.status(400).json({ status: false, message: "Bill ID is required" });
     }
 
-    const updated = await billDAO.update(billId, { status: 'PAID' })
-    return res.status(200).json({ status: true, data: updated })
+    // find the bill first
+    const bill = await billDAO.toServerById(billId);
+    if (!bill) {
+      return res.status(404).json({ status: false, message: "Bill not found" });
+    }
+
+    // update the bill status
+    const updated = await billDAO.update(billId, { status: "PAID" });
+
+    // credit back to user balance
+    // db actions should be in dao TODO
+    await User.findByIdAndUpdate(
+      bill.userId,
+      { $inc: { balance: Math.abs(bill.amount) } }, // ✅ add back amount
+      { new: true }
+    );
+
+    return res.status(200).json({ status: true, data: updated });
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
-}
+};
 
 // cancel bill
 export const cancelBill = async (req: AuthRequest, res: Response) => {
@@ -92,12 +116,13 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
     const billId = req.params.id;
     if (!billId) return res.status(400).json({ status: false, message: 'Bill ID is required' });
 
-    const updated = await billDAO.update(billId, { status: 'CANCELED' });
+    const updated = await billDAO.update(billId, { status: "CANCELED" });
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
     return handleControllerError(res, error);
   }
 };
+
 
 
 // update bill (admin use)

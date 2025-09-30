@@ -26,24 +26,45 @@ export const toUserDAO = (user: IUser): UserView => {
 }
 
 const create = async (userData: CreateUserHash): Promise<UserView> => {
-  const user = new User({
-    username: userData.username,
-    firstname: userData.firstname,
-    lastname: userData.lastname,
-    email: userData.email,
-    phone: userData.phone,
-    AFM: userData.AFM,
-    building: userData.building,
-    flat: userData.flat,
-    balance: userData.balance,
-    roles: userData.roles ?? ['USER'],
-    hashedPassword: userData.hashedPassword
-  })
+  try {
+    const user = new User({
+      username: userData.username,
+      firstname: userData.firstname,
+      lastname: userData.lastname,
+      email: userData.email,
+      phone: userData.phone,
+      AFM: userData.AFM,
+      building: userData.building,
+      flat: userData.flat,
+      balance: userData.balance,
+      roles: userData.roles ?? ['USER'],
+      hashedPassword: userData.hashedPassword
+    });
 
-  const response = await user.save()
-  if (!response) throw new Error('Error saving user')
-  return toUserDAO(response as IUser)
-}
+    const response = await user.save();
+    if (!response) {
+      throw new Error("Error saving user: empty response from Mongo");
+    }
+
+    return toUserDAO(response as IUser);
+  } catch (err: unknown) {
+    console.error("❌ Error creating user:", err);
+
+    // Handle duplicate key errors gracefully
+    if (
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      (err as any).code === 11000
+    ) {
+      const dupField = Object.keys((err as any).keyValue || {})[0];
+      throw new Error(`Duplicate key error: ${dupField} already exists`);
+    }
+
+    throw err;
+  }
+};
+
 
 const readAll = async (): Promise<UserView[]> => {
   const users = await User.find()

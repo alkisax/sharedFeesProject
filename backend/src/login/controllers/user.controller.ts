@@ -35,7 +35,7 @@ export const createUser = async (req: Request, res: Response) => {
       username: data.username,
       firstname: data.firstname ?? '',
       lastname: data.lastname ?? '',
-      email: data.email ?? '',
+      email: data.email?.trim() || undefined,
       phone: data.phone,
       AFM: data.AFM,
       building: data.building,

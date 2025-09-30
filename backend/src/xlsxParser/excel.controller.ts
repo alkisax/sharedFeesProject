@@ -118,6 +118,18 @@ import User from '../login/models/users.models'
       await Bill.insertMany(billsToInsert);
       // 💥 τελος δημιουργίας bill
 
+      // 💣 update each user's balance (subtract bill amount)
+      for (const b of billsToInsert) {
+        if (!b || !b.userId) continue;
+
+        await User.findByIdAndUpdate(
+          b.userId,
+          { $inc: { balance: -Math.abs(b.amount) } }, // subtract amount
+          { new: true }
+        );
+      }
+      // 💥 end of update users
+
       return res.status(201).json({
         status: true,
         message: "GlobalBill created successfully",

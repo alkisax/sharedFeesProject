@@ -26,6 +26,7 @@ const AdminBillsPanel = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [billsMap, setBillsMap] = useState<Record<string, BillType[]>>({});
   const [loading, setLoading] = useState(false);
+  
 
   const fetchGlobalBills = useCallback(async () => {
     try {
@@ -67,9 +68,19 @@ const AdminBillsPanel = () => {
     }
   };
 
+  // 1. load global bills once
   useEffect(() => {
     fetchGlobalBills();
   }, [fetchGlobalBills]);
+
+  // 2. when globalBills state is updated, fetch bills for each
+  useEffect(() => {
+    if (globalBills.length > 0) {
+      globalBills.forEach((g) => {
+        fetchBillsForGlobal(g.id);
+      });
+    }
+  }, [globalBills]);
 
   const handleToggleExpand = (gb: GlobalBillType) => {
     if (expanded === gb.id) {
@@ -80,6 +91,13 @@ const AdminBillsPanel = () => {
         fetchBillsForGlobal(gb.id);
       }
     }
+  };
+
+  const getRowColor = (bills: BillType[]): string => {
+    if (bills.some((b) => b.status === 'UNPAID')) return '#ffe5e5'; // light red
+    if (bills.some((b) => b.status === 'PENDING')) return '#e5f0ff'; // light blue
+    if (bills.length > 0 && bills.every((b) => b.status === 'PAID')) return '#e5ffe5'; // light green
+    return 'inherit';
   };
 
   return (
@@ -118,7 +136,10 @@ const AdminBillsPanel = () => {
                 <React.Fragment key={g.id}>
                   <TableRow
                     hover
-                    sx={{ cursor: "pointer" }}
+                    sx={{
+                      cursor: "pointer",
+                      bgcolor: getRowColor(billsMap[g.id] || []),
+                     }}
                     onClick={() => handleToggleExpand(g)}
                   >
                     <TableCell>{g.month}</TableCell>
@@ -133,6 +154,7 @@ const AdminBillsPanel = () => {
                     <AdminBillsFooter
                       bills={billsMap[g.id] || []}
                       colSpan={4}
+                      onRefresh={() => fetchBillsForGlobal(g.id)}
                     />
                   )}
                 </React.Fragment>

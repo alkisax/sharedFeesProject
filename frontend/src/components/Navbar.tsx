@@ -33,7 +33,7 @@ const Navbar = () => {
               id="navbar-admin-btn"
               color="inherit"
               component={Link}
-              to="/admin-panel"
+              to="/admin"
             >
               Admin Panel
             </Button>

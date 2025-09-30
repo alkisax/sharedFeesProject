@@ -71,7 +71,7 @@ const LoginBackend = ({ url }: Props) => {
         updatedAt: userData.updatedAt,
       });
 
-      navigate("/");
+      navigate("/user");
     } catch (error) {
       console.error("Error:", error);
     } finally {

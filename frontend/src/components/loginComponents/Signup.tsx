@@ -7,11 +7,16 @@ import { VariablesContext } from "../../context/VariablesContext";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [afm, setAfm] = useState("");
+  const [building, setBuilding] = useState("");
+  const [flat, setFlat] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { url } = useContext(VariablesContext);
@@ -23,55 +28,61 @@ const Signup = () => {
     setLoading(true);
     setErrorMessage("");
 
-    // basic validation
+    // check only required fields
+    if (!username || !password || !confirmPassword) {
+      setErrorMessage("Username and password are required");
+      setLoading(false);
+      return;
+    }
+
     const passError = frontendValidatePassword(password);
     if (passError) {
       setErrorMessage(passError);
       setLoading(false);
       return;
     }
-    const emailError = frontEndValidateEmail(email);
-    if (emailError) {
-      setErrorMessage(emailError);
-      setLoading(false);
-      return;
-    }
-    if (!username || !firstname || !lastname || !email || !password || !confirmPassword) {
-      setErrorMessage("Please fill in all fields");
-      setLoading(false);
-      return;
-    }
+
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match");
       setLoading(false);
       return;
     }
 
+    // email validation only if email provided
+    if (email) {
+      const emailError = frontEndValidateEmail(email);
+      if (emailError) {
+        setErrorMessage(emailError);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const res = await axios.post(`${url}/api/users/signup/user`, {
         username,
-        firstname,
-        lastname,
-        email,
         password,
+        firstname: firstname || undefined,
+        lastname: lastname || undefined,
+        email: email || undefined,
+        phone: phone && phone.trim() !== "" ? [phone] : undefined,
+        AFM: afm ? afm : undefined,
+        building: building || undefined,
+        flat: flat || undefined,
       });
 
       if (res.data.status) {
         alert("Account created successfully 🚀");
-        navigate("/login"); // or auto-login if you extend backend to return a token
+        navigate("/login");
       } else {
         setErrorMessage(res.data.error || res.data.data || "Registration failed");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const backendMsg = err.response?.data?.error || err.response?.data?.message;
-        if (backendMsg) {
-          setErrorMessage(Array.isArray(backendMsg) ? backendMsg.join(", ") : backendMsg);
-        } else {
-          setErrorMessage("An unknown error occurred during registration");
-        }
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
+        setErrorMessage(
+          Array.isArray(backendMsg) ? backendMsg.join(", ") : backendMsg || "Unknown error"
+        );
       } else {
         setErrorMessage("An unknown error occurred during registration");
       }
@@ -90,7 +101,6 @@ const Signup = () => {
         <Box component="form" onSubmit={handleRegisterBackend} noValidate>
           <Stack spacing={2}>
             <TextField
-              id="backend-form-username"
               label="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -98,32 +108,6 @@ const Signup = () => {
               fullWidth
             />
             <TextField
-              id="backend-form-firstname"
-              label="First Name"
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="backend-form-lastname"
-              label="Last Name"
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="backend-form-email"
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="backend-form-password"
               label="Password"
               type="password"
               value={password}
@@ -132,7 +116,6 @@ const Signup = () => {
               fullWidth
             />
             <TextField
-              id="backend-form-confirm-password"
               label="Confirm Password"
               type="password"
               value={confirmPassword}
@@ -141,20 +124,22 @@ const Signup = () => {
               fullWidth
             />
 
+            {/* Optional fields */}
+            <TextField label="First Name" value={firstname} onChange={(e) => setFirstname(e.target.value)} fullWidth />
+            <TextField label="Last Name" value={lastname} onChange={(e) => setLastname(e.target.value)} fullWidth />
+            <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth />
+            <TextField label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth />
+            <TextField label="AFM" value={afm} onChange={(e) => setAfm(e.target.value)} fullWidth />
+            <TextField label="Building" value={building} onChange={(e) => setBuilding(e.target.value)} fullWidth />
+            <TextField label="Flat" value={flat} onChange={(e) => setFlat(e.target.value)} fullWidth />
+
             {errorMessage && (
               <Typography variant="body2" color="error" align="center">
                 {errorMessage}
               </Typography>
             )}
 
-            <Button
-              id="backend-form-submit-btn"
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              fullWidth
-            >
+            <Button type="submit" variant="contained" color="primary" disabled={loading} fullWidth>
               {loading ? "Loading..." : "Register"}
             </Button>
 
