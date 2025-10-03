@@ -254,18 +254,14 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
       <Dialog open={!!viewUrl} onClose={() => setViewUrl(null)} maxWidth='md' fullWidth>
         <DialogTitle>Receipt Preview</DialogTitle>
         <DialogContent>
-          {viewUrl && viewUrl.endsWith('.pdf') ? (
+          {viewUrl ? (
             <iframe
               src={viewUrl}
               style={{ width: '100%', height: '80vh', border: 'none' }}
-              title='receipt pdf'
+              title="receipt"
             />
           ) : (
-            <img
-              src={viewUrl ?? ''}
-              alt='receipt'
-              style={{ maxWidth: '100%', maxHeight: '80vh' }}
-            />
+            <Typography>No receipt available</Typography>
           )}
         </DialogContent>
       </Dialog>
