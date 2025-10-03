@@ -56,6 +56,8 @@ export interface IBill {
   breakdown: Record<string, number>; // per-category costs (ΔΕΗ, Καθαριότητα, κλπ.)
   amount: number;               // Σύνολο
   status: BillStatus;
+  paymentMethod?: "CASH" | "BANK" | "OTHER"; // Τρόπος πληρωμής
+  paidAt?: Date;  // Ημερομηνία πληρωμής
   receiptUrl?: string;
   notes?: string[];
   createdAt: Date;
@@ -75,6 +77,8 @@ export interface BillView {
   breakdown: Record<string, number>;
   amount: number;
   status: BillStatus;
+  paymentMethod?: "CASH" | "BANK" | "OTHER"; // Τρόπος πληρωμής
+  paidAt?: Date;  // Ημερομηνία πληρωμής
   receiptUrl?: string;
   notes?: string[];
   createdAt: Date;
@@ -94,6 +98,8 @@ export interface CreateBill {
   breakdown: Record<string, number>;
   amount: number;
   status?: BillStatus;
+  paymentMethod?: "CASH" | "BANK" | "OTHER"; // Τρόπος πληρωμής
+  paidAt?: Date;    // Ημερομηνία πληρωμής
   receiptUrl?: string;
   notes?: string[];
 }
@@ -102,6 +108,8 @@ export interface CreateBill {
 // Χρησιμοποιείται για ενημέρωση κατάστασης (πληρωμένος/εγκεκριμένος) ή για notes/απόδειξη
 export interface UpdateBill {
   status?: BillStatus;
-  receiptUrl?: string;
+  paymentMethod?: "CASH" | "BANK" | "OTHER" | null; // Τρόπος πληρωμής
+  paidAt?: Date | null;   // Ημερομηνία πληρωμής
+  receiptUrl?: string | null;
   notes?: string[];
 }

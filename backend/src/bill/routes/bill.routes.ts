@@ -14,10 +14,12 @@ router.get('/me', middleware.verifyToken, billController.findMyBills)
 // ✅ update
 router.patch('/:id/pay', middleware.verifyToken, billController.markBillAsPaid)
 router.patch('/:id/approve', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.approveBill)
+// new endpoint for cash payments (admin only)
+router.patch('/:id/pay-cash', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.markBillPaidInCash)
 router.put('/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.updateBillById)
 
 // ✅ cancel (admin only)
-router.patch('/bills/:id/cancel', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.cancelBill)
+router.patch('/:id/cancel', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.cancelBill)
 
 // ✅ delete (admin only)
 router.delete('/:id', middleware.verifyToken, middleware.checkRole('ADMIN'), billController.deleteBillById)

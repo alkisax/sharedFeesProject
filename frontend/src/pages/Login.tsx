@@ -1,12 +1,8 @@
 // src/components/Login.tsx
 import { Box, Paper, Typography, Divider } from "@mui/material";
 import LoginBackend from "../components/loginComponents/LoginBackend";
-import { VariablesContext } from "../context/VariablesContext";
-import { useContext } from "react";
 
 const Login = () => {
-
-  const { url } = useContext(VariablesContext);
 
   return (
     <Box
@@ -32,7 +28,7 @@ const Login = () => {
       >
         <Typography variant="h5">Login</Typography>
         <Divider />
-        <LoginBackend url={url} />
+        <LoginBackend />
       </Paper>
     </Box>
   );

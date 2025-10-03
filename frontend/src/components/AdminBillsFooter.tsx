@@ -18,10 +18,16 @@ import {
   TableBody,
   TableHead,
   DialogActions,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CloseIcon from "@mui/icons-material/Close";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import TableChartIcon from "@mui/icons-material/TableChart"; // ✅ icon for popup button
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import DoneIcon from "@mui/icons-material/Done";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import axios from 'axios';
 import type { BillType } from '../types/excel.types';
 import { VariablesContext } from '../context/VariablesContext';
@@ -53,16 +59,28 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
 
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
+  const [selectedBill, setSelectedBill] = useState<BillType | null>(null);
 
   // ✅ state for popup tables
   const [openTables, setOpenTables] = useState(false);
 
-  const handleAction = async (billId: string, action: 'approve' | 'cancel') => {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+
+  // extend types
+  const handleAction = async (
+    billId: string,
+    action: 'approve' | 'cancel' | 'cash'
+  ) => {
     try {
-      const endpoint =
-        action === 'approve'
-          ? `${url}/api/bills/${billId}/approve`
-          : `${url}/api/bills/${billId}/cancel`;
+      let endpoint = '';
+      if (action === 'approve') {
+        endpoint = `${url}/api/bills/${billId}/approve`;
+      } else if (action === 'cancel') {
+        endpoint = `${url}/api/bills/${billId}/cancel`;
+      } else if (action === 'cash') {
+        endpoint = `${url}/api/bills/${billId}/pay-cash`;
+      }
 
       await axios.patch(
         endpoint,
@@ -106,35 +124,111 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
               <Stack direction="row" spacing={1} alignItems="center">
                 {/* ❌ Cancel available only on PENDING or PAID */}
                 {(b.status === "PENDING" || b.status === "PAID") && (
-                  <Tooltip title="Cancel this bill">
-                    <IconButton
+                  isSmall ? (
+                    <Tooltip title="Cancel this bill">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => setConfirmCancel(b.id)}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
                       size="small"
+                      variant="outlined"
                       color="error"
                       onClick={() => setConfirmCancel(b.id)}
                     >
-                      <CloseIcon />
-                    </IconButton>
-                  </Tooltip>
+                      Cancel
+                    </Button>
+                  )
                 )}
 
                 {b.receiptUrl && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setViewUrl(b.receiptUrl!)}
-                  >
-                    View Receipt
-                  </Button>
+                  isSmall ? (
+                    <Tooltip title="View Receipt">
+                      <IconButton
+                        size="small"
+                        onClick={() => setViewUrl(b.receiptUrl!)}
+                      >
+                        <ReceiptIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setViewUrl(b.receiptUrl!)}
+                    >
+                      View Receipt
+                    </Button>
+                  )
                 )}
 
                 {b.status === "PENDING" && (
+                  isSmall ? (
+                    <Tooltip title="Approve">
+                      <IconButton
+                        size="small"
+                        color="success"
+                        onClick={() => handleAction(b.id, "approve")}
+                      >
+                        <DoneIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleAction(b.id, "approve")}
+                    >
+                      Approve
+                    </Button>
+                  )
+                )}
+
+                {b.status === "UNPAID" && (
+                  isSmall ? (
+                    <Tooltip title="Paid in Cash">
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={() => handleAction(b.id, "cash")}
+                      >
+                        <AttachMoneyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleAction(b.id, "cash")}
+                    >
+                      Paid in Cash
+                    </Button>
+                  )
+                )}
+
+                {isSmall ? (
+                  <Tooltip title="View Details">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSelectedBill(b)}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
                   <Button
                     size="small"
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleAction(b.id, "approve")}
+                    variant="outlined"
+                    onClick={() => setSelectedBill(b)}
                   >
-                    Approve
+                    View
                   </Button>
                 )}
 
@@ -167,86 +261,92 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
       >
         <DialogTitle>Detailed Breakdown</DialogTitle>
         <DialogContent dividers>
-          {/* Aggregated breakdown */}
-          <Box mb={3} sx={{ overflowX: "auto" }}>
-            <Typography variant="h6" gutterBottom>
-              Breakdown
-            </Typography>
-            <Paper sx={{ overflowX: "auto" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
-                    <TableCell>Category</TableCell>
-                    <TableCell align="right">Amount (€)</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(bills[0].breakdown).map(([category, value], idx) => (
-                    <TableRow
-                      key={category}
-                      sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
-                    >
-                      <TableCell sx={{ fontWeight: "bold" }}>{category}</TableCell>
-                      <TableCell align="right">{value}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
-          </Box>
-
-          {/* User bills breakdown */}
-          <Box sx={{ overflowX: "auto" }}>
-            <Typography variant="h6" gutterBottom>
-              User Bills
-            </Typography>
-            <Paper sx={{ overflowX: "auto" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
-                    <TableCell>ΔΙΑΜ</TableCell>
-                    <TableCell>ΟΝΟΜΑ</TableCell>
-                    <TableCell>Χιλιοστά</TableCell>
-                    {Object.keys(bills[0].breakdown).map((cat) => (
-                      <TableCell key={cat}>{cat}</TableCell>
-                    ))}
-                    <TableCell>ΣΥΝΟΛΟ</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {bills.map((b, idx) => (
-                    <TableRow
-                      key={b.id}
-                      sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
-                    >
-                      <TableCell>{b.flat}</TableCell>
-                      <TableCell>{b.ownerName}</TableCell>
-                      <TableCell>{b.share ?? "-"}</TableCell>
-                      {Object.keys(b.breakdown).map((cat) => (
-                        <TableCell key={cat}>{b.breakdown[cat] ?? 0}</TableCell>
+          {bills.length === 0 ? (
+            <Typography>No bills to show</Typography>
+          ) : (
+            <>
+              {/* Aggregated breakdown */}
+              <Box mb={3} sx={{ overflowX: "auto" }}>
+                <Typography variant="h6" gutterBottom>
+                  Breakdown
+                </Typography>
+                <Paper sx={{ overflowX: "auto" }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
+                        <TableCell>Category</TableCell>
+                        <TableCell align="right">Amount (€)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(bills[0].breakdown).map(([category, value], idx) => (
+                        <TableRow
+                          key={category}
+                          sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
+                        >
+                          <TableCell sx={{ fontWeight: "bold" }}>{category}</TableCell>
+                          <TableCell align="right">{value}</TableCell>
+                        </TableRow>
                       ))}
-                      <TableCell sx={{ fontWeight: "bold" }}>{b.amount}</TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow sx={{ backgroundColor: "#E6E6FA" }}>
-                    <TableCell>-</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>ΣΥΝΟΛΑ</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      {bills.reduce((acc, b) => acc + (b.share ?? 0), 0)}
-                    </TableCell>
-                    {Object.keys(bills[0].breakdown).map((cat) => (
-                      <TableCell key={cat} sx={{ fontWeight: "bold" }}>
-                        {bills.reduce((acc, b) => acc + (b.breakdown[cat] ?? 0), 0)}
-                      </TableCell>
-                    ))}
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      {bills.reduce((acc, b) => acc + b.amount, 0)}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </Paper>
-          </Box>
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Box>
+
+              {/* User bills breakdown */}
+              <Box sx={{ overflowX: "auto" }}>
+                <Typography variant="h6" gutterBottom>
+                  User Bills
+                </Typography>
+                <Paper sx={{ overflowX: "auto" }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
+                        <TableCell>ΔΙΑΜ</TableCell>
+                        <TableCell>ΟΝΟΜΑ</TableCell>
+                        <TableCell>Χιλιοστά</TableCell>
+                        {Object.keys(bills[0].breakdown).map((cat) => (
+                          <TableCell key={cat}>{cat}</TableCell>
+                        ))}
+                        <TableCell>ΣΥΝΟΛΟ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bills.map((b, idx) => (
+                        <TableRow
+                          key={b.id}
+                          sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
+                        >
+                          <TableCell>{b.flat}</TableCell>
+                          <TableCell>{b.ownerName}</TableCell>
+                          <TableCell>{b.share ?? "-"}</TableCell>
+                          {Object.keys(b.breakdown).map((cat) => (
+                            <TableCell key={cat}>{b.breakdown[cat] ?? 0}</TableCell>
+                          ))}
+                          <TableCell sx={{ fontWeight: "bold" }}>{b.amount}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow sx={{ backgroundColor: "#E6E6FA" }}>
+                        <TableCell>-</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>ΣΥΝΟΛΑ</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>
+                          {bills.reduce((acc, b) => acc + (b.share ?? 0), 0)}
+                        </TableCell>
+                        {Object.keys(bills[0].breakdown).map((cat) => (
+                          <TableCell key={cat} sx={{ fontWeight: "bold" }}>
+                            {bills.reduce((acc, b) => acc + (b.breakdown[cat] ?? 0), 0)}
+                          </TableCell>
+                        ))}
+                        <TableCell sx={{ fontWeight: "bold" }}>
+                          {bills.reduce((acc, b) => acc + b.amount, 0)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Box>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -254,18 +354,14 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
       <Dialog open={!!viewUrl} onClose={() => setViewUrl(null)} maxWidth='md' fullWidth>
         <DialogTitle>Receipt Preview</DialogTitle>
         <DialogContent>
-          {viewUrl && viewUrl.endsWith('.pdf') ? (
+          {viewUrl ? (
             <iframe
               src={viewUrl}
               style={{ width: '100%', height: '80vh', border: 'none' }}
-              title='receipt pdf'
+              title="receipt"
             />
           ) : (
-            <img
-              src={viewUrl ?? ''}
-              alt='receipt'
-              style={{ maxWidth: '100%', maxHeight: '80vh' }}
-            />
+            <Typography>No receipt available</Typography>
           )}
         </DialogContent>
       </Dialog>
@@ -302,6 +398,68 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
           >
             Do not cancel
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* bill details popup */}
+      <Dialog
+        open={!!selectedBill}
+        onClose={() => setSelectedBill(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Bill Details</DialogTitle>
+        <DialogContent dividers>
+          {selectedBill && (
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                {selectedBill.flat} – {selectedBill.ownerName}
+              </Typography>
+              <Typography>Status: {selectedBill.status}</Typography>
+              {selectedBill.paymentMethod && (
+                <Typography>Payment Method: {selectedBill.paymentMethod}</Typography>
+              )}
+              {selectedBill.paidAt && (
+                <Typography>Paid At: {new Date(selectedBill.paidAt).toLocaleString()}</Typography>
+              )}
+              <Typography>Total Amount: {selectedBill.amount} €</Typography>
+
+              <Box mt={2}>
+                <Typography variant="subtitle2">Breakdown:</Typography>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Category</TableCell>
+                      <TableCell align="right">Amount (€)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(selectedBill.breakdown).map(([cat, val]) => (
+                      <TableRow key={cat}>
+                        <TableCell>{cat}</TableCell>
+                        <TableCell align="right">{val}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  {selectedBill.notes && selectedBill.notes.length > 0 && (
+                    <Box mt={2}>
+                      <Typography variant="subtitle2" gutterBottom>Notes:</Typography>
+                      <ul style={{ paddingLeft: "1.2rem", marginTop: 0 }}>
+                        {selectedBill.notes.map((note, idx) => (
+                          <li key={idx}>
+                            <Typography variant="body2">{note}</Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </Box>
+                  )}
+                </Table>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedBill(null)}>Close</Button>
         </DialogActions>
       </Dialog>
     </>

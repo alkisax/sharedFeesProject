@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { authController } from '../controllers/auth.controller';
 // import { limiter } from '../../utils/limiter';
+import { middleware } from '../middleware/verification.middleware'
 
 //>     "username": "alkisax",
 //>     "password": "AdminPass1!"
@@ -11,5 +12,6 @@ import { authController } from '../controllers/auth.controller';
 // TODO add limiter later
 router.post('/', authController.login);
 router.post('/refresh', authController.refreshToken);
+router.get('/is-logedin', middleware.verifyToken, authController.isLogedin)
 
 export default router;

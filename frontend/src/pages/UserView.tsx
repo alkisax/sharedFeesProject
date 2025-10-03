@@ -17,6 +17,8 @@ import axios from 'axios';
 import { VariablesContext } from '../context/VariablesContext';
 import { UserAuthContext } from '../context/UserAuthContext';
 import type { BillType } from '../types/excel.types';
+import { account, storage } from '../lib/appwriteConfig';
+import { ID } from 'appwrite';
 
 type UploadState = Record<string, File | null>;
 type BusyState = Record<string, boolean>;
@@ -97,33 +99,67 @@ const Userview = () => {
         return;
       }
 
-      // 1) upload file via existing multer endpoint
-      const form = new FormData();
-      form.append('file', file as File);
-      // optional: include a simple name/desc
-      form.append('name', `receipt_${bill.month}_${bill.flat}`);
-      form.append('desc', `Απόδειξη για λογαριασμό ${bill.month} - ${bill.flat}`);
+      // so this part will later be commented out but: it takes as input ⬆️: form, headers with multipart/form-data and token it outputs ⬇️: // backend returns { data: { success: 1, file: { url, filename, ... } } } const receiptUrl: string | undefined = uploadRes?.data?.data?.file?.url;
 
-      const uploadRes = await axios.post(
-        `${url}/api/upload-multer?saveToMongo=true`,
-        form,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // // 1) upload file via existing multer endpoint
+      // const form = new FormData();
+      // form.append('file', file as File);
+      // // optional: include a simple name/desc
+      // form.append('name', `receipt_${bill.month}_${bill.flat}`);
+      // form.append('desc', `Απόδειξη για λογαριασμό ${bill.month} - ${bill.flat}`);
 
-      // backend returns { data: { success: 1, file: { url, filename, ... } } }
-      const receiptUrl: string | undefined = uploadRes?.data?.data?.file?.url;
-      // const receiptFilename: string | undefined = uploadRes?.data?.data?.file?.filename;
+      // const uploadRes = await axios.post(
+      //   `${url}/api/upload-multer?saveToMongo=true`,
+      //   form,
+      //   {
+      //     headers: {
+      //       'Content-Type': 'multipart/form-data',
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   }
+      // );
 
-      if (!receiptUrl) {
-        setErrors({ ...errors, [bill.id]: 'Το upload ολοκληρώθηκε αλλά δεν επιστράφηκε URL.' });
-        setBusy({ ...busy, [bill.id]: false });
+      // // backend returns { data: { success: 1, file: { url, filename, ... } } }
+      // const receiptUrl: string | undefined = uploadRes?.data?.data?.file?.url;
+      // // const receiptFilename: string | undefined = uploadRes?.data?.data?.file?.filename;
+
+      // if (!receiptUrl) {
+      //   setErrors({ ...errors, [bill.id]: 'Το upload ολοκληρώθηκε αλλά δεν επιστράφηκε URL.' });
+      //   setBusy({ ...busy, [bill.id]: false });
+      //   return;
+      // }
+
+      // 1. upload recipt via appwrite
+      if (!file) {
         return;
       }
+      // ensure session
+      try {
+        await account.get();
+      } catch {
+        await account.createAnonymousSession();
+      }
+
+      const uploaded = await storage.createFile({
+        bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID,
+        fileId: ID.unique(),
+        file,
+      });
+
+      // console.log("📂 Uploaded file response:", uploaded);
+      // console.log("📎 Local file object:", {
+      //   name: file.name,
+      //   type: file.type,
+      //   size: file.size,
+      // });
+
+      // make file accessible for admin review
+      const receiptUrl = storage.getFileView({
+        bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID,
+        fileId: uploaded.$id,
+      });
+
+      // console.log("🔗 Generated receiptUrl:", receiptUrl);
 
       // 2) mark bill as PENDING + attach receipt url (expects backend PATCH to accept it)
         await axios.patch(`${url}/api/bills/${bill.id}/pay`, {
