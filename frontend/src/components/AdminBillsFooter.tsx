@@ -167,88 +167,95 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
       >
         <DialogTitle>Detailed Breakdown</DialogTitle>
         <DialogContent dividers>
-          {/* Aggregated breakdown */}
-          <Box mb={3} sx={{ overflowX: "auto" }}>
-            <Typography variant="h6" gutterBottom>
-              Breakdown
-            </Typography>
-            <Paper sx={{ overflowX: "auto" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
-                    <TableCell>Category</TableCell>
-                    <TableCell align="right">Amount (€)</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(bills[0].breakdown).map(([category, value], idx) => (
-                    <TableRow
-                      key={category}
-                      sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
-                    >
-                      <TableCell sx={{ fontWeight: "bold" }}>{category}</TableCell>
-                      <TableCell align="right">{value}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
-          </Box>
-
-          {/* User bills breakdown */}
-          <Box sx={{ overflowX: "auto" }}>
-            <Typography variant="h6" gutterBottom>
-              User Bills
-            </Typography>
-            <Paper sx={{ overflowX: "auto" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
-                    <TableCell>ΔΙΑΜ</TableCell>
-                    <TableCell>ΟΝΟΜΑ</TableCell>
-                    <TableCell>Χιλιοστά</TableCell>
-                    {Object.keys(bills[0].breakdown).map((cat) => (
-                      <TableCell key={cat}>{cat}</TableCell>
-                    ))}
-                    <TableCell>ΣΥΝΟΛΟ</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {bills.map((b, idx) => (
-                    <TableRow
-                      key={b.id}
-                      sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
-                    >
-                      <TableCell>{b.flat}</TableCell>
-                      <TableCell>{b.ownerName}</TableCell>
-                      <TableCell>{b.share ?? "-"}</TableCell>
-                      {Object.keys(b.breakdown).map((cat) => (
-                        <TableCell key={cat}>{b.breakdown[cat] ?? 0}</TableCell>
+          {bills.length === 0 ? (
+            <Typography>No bills to show</Typography>
+          ) : (
+            <>
+              {/* Aggregated breakdown */}
+              <Box mb={3} sx={{ overflowX: "auto" }}>
+                <Typography variant="h6" gutterBottom>
+                  Breakdown
+                </Typography>
+                <Paper sx={{ overflowX: "auto" }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
+                        <TableCell>Category</TableCell>
+                        <TableCell align="right">Amount (€)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(bills[0].breakdown).map(([category, value], idx) => (
+                        <TableRow
+                          key={category}
+                          sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
+                        >
+                          <TableCell sx={{ fontWeight: "bold" }}>{category}</TableCell>
+                          <TableCell align="right">{value}</TableCell>
+                        </TableRow>
                       ))}
-                      <TableCell sx={{ fontWeight: "bold" }}>{b.amount}</TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow sx={{ backgroundColor: "#E6E6FA" }}>
-                    <TableCell>-</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>ΣΥΝΟΛΑ</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      {bills.reduce((acc, b) => acc + (b.share ?? 0), 0)}
-                    </TableCell>
-                    {Object.keys(bills[0].breakdown).map((cat) => (
-                      <TableCell key={cat} sx={{ fontWeight: "bold" }}>
-                        {bills.reduce((acc, b) => acc + (b.breakdown[cat] ?? 0), 0)}
-                      </TableCell>
-                    ))}
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      {bills.reduce((acc, b) => acc + b.amount, 0)}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </Paper>
-          </Box>
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Box>
+
+              {/* User bills breakdown */}
+              <Box sx={{ overflowX: "auto" }}>
+                <Typography variant="h6" gutterBottom>
+                  User Bills
+                </Typography>
+                <Paper sx={{ overflowX: "auto" }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: "#FFF9C4" }}>
+                        <TableCell>ΔΙΑΜ</TableCell>
+                        <TableCell>ΟΝΟΜΑ</TableCell>
+                        <TableCell>Χιλιοστά</TableCell>
+                        {Object.keys(bills[0].breakdown).map((cat) => (
+                          <TableCell key={cat}>{cat}</TableCell>
+                        ))}
+                        <TableCell>ΣΥΝΟΛΟ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bills.map((b, idx) => (
+                        <TableRow
+                          key={b.id}
+                          sx={{ backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#FAFAFA" }}
+                        >
+                          <TableCell>{b.flat}</TableCell>
+                          <TableCell>{b.ownerName}</TableCell>
+                          <TableCell>{b.share ?? "-"}</TableCell>
+                          {Object.keys(b.breakdown).map((cat) => (
+                            <TableCell key={cat}>{b.breakdown[cat] ?? 0}</TableCell>
+                          ))}
+                          <TableCell sx={{ fontWeight: "bold" }}>{b.amount}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow sx={{ backgroundColor: "#E6E6FA" }}>
+                        <TableCell>-</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>ΣΥΝΟΛΑ</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>
+                          {bills.reduce((acc, b) => acc + (b.share ?? 0), 0)}
+                        </TableCell>
+                        {Object.keys(bills[0].breakdown).map((cat) => (
+                          <TableCell key={cat} sx={{ fontWeight: "bold" }}>
+                            {bills.reduce((acc, b) => acc + (b.breakdown[cat] ?? 0), 0)}
+                          </TableCell>
+                        ))}
+                        <TableCell sx={{ fontWeight: "bold" }}>
+                          {bills.reduce((acc, b) => acc + b.amount, 0)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Box>
+            </>
+          )}
         </DialogContent>
       </Dialog>
+
 
       {/* Receipt Preview */}
       <Dialog open={!!viewUrl} onClose={() => setViewUrl(null)} maxWidth='md' fullWidth>

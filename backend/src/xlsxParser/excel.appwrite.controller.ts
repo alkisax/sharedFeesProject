@@ -84,6 +84,7 @@ const uploadExcelAppwrite = async (req: Request, res: Response) => {
       await Promise.all(
         rows
           .filter((row) => row[0])
+          // Loop που δημιουργει λογαριασμό διαμερίσματος για κάθε γραμμή του γενικού λογαριασμού → παρακάτω προστήθεντε στον χρήστη
           .map(async (row) => {
             const flat = row[0] as string;
             const ownerName = row[1] as string;

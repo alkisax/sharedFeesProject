@@ -11,6 +11,9 @@ import {
   Paper,
   Switch,
   FormControlLabel,
+  Button,
+  Stack,
+  Box,
 } from "@mui/material";
 import axios from "axios";
 import { VariablesContext } from "../context/VariablesContext";
@@ -26,7 +29,9 @@ const AdminBillsPanel = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [billsMap, setBillsMap] = useState<Record<string, BillType[]>>({});
   const [loading, setLoading] = useState(false);
-  
+
+  const [buildings, setBuildings] = useState<string[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
 
   const fetchGlobalBills = useCallback(async () => {
     try {
@@ -36,50 +41,56 @@ const AdminBillsPanel = () => {
         `${url}/api/global-bills`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setGlobalBills(res.data.data);
+      const data = res.data.data;
+      setGlobalBills(data);
+
+      // extract unique buildings
+      const uniqueBuildings = [...new Set(data.map((g) => g.building))];
+      setBuildings(uniqueBuildings);
+
+      // auto-select first building
+      if (uniqueBuildings.length > 0 && !selectedBuilding) {
+        setSelectedBuilding(uniqueBuildings[0]);
+      }
     } catch (err) {
       console.error("Error fetching global bills:", err);
     } finally {
       setLoading(false);
     }
-  }, [url]);
+  }, [url, selectedBuilding]);
 
   const fetchBillsForGlobal = async (globalId: string) => {
     try {
-      setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get<{ status: boolean; data: BillType[] }>(
         `${url}/api/bills`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log("Fetched bills:", res.data.data);
-      console.log("Looking for globalId:", globalId);
-
-      const filtered = res.data.data.filter((b) => {
-        console.log("Bill globalBillId:", b.globalBillId, "===", globalId);
-        return b.globalBillId?.toString() === globalId.toString();
-      });
+      const filtered = res.data.data.filter(
+        (b) => b.globalBillId?.toString() === globalId.toString()
+      );
       setBillsMap((prev) => ({ ...prev, [globalId]: filtered }));
     } catch (err) {
       console.error("Error fetching bills:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // 1. load global bills once
+  // load global bills once
   useEffect(() => {
     fetchGlobalBills();
   }, [fetchGlobalBills]);
 
-  // 2. when globalBills state is updated, fetch bills for each
+  // auto-fetch bills for all global bills when they load
   useEffect(() => {
     if (globalBills.length > 0) {
       globalBills.forEach((g) => {
-        fetchBillsForGlobal(g.id);
+        if (!billsMap[g.id]) {
+          fetchBillsForGlobal(g.id);
+        }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalBills]);
 
   const handleToggleExpand = (gb: GlobalBillType) => {
@@ -94,10 +105,11 @@ const AdminBillsPanel = () => {
   };
 
   const getRowColor = (bills: BillType[]): string => {
-    if (bills.some((b) => b.status === 'PENDING')) return '#e5f0ff'; // light blue
-    if (bills.some((b) => b.status === 'UNPAID')) return '#ffe5e5'; // light red
-    if (bills.length > 0 && bills.every((b) => b.status === 'PAID')) return '#e5ffe5'; // light green
-    return 'inherit';
+    if (bills.some((b) => b.status === "PENDING")) return "#e5f0ff"; // light blue
+    if (bills.some((b) => b.status === "UNPAID")) return "#ffe5e5"; // light red
+    if (bills.length > 0 && bills.every((b) => b.status === "PAID"))
+      return "#e5ffe5"; // light green
+    return "inherit";
   };
 
   return (
@@ -119,49 +131,84 @@ const AdminBillsPanel = () => {
 
       {loading && <p>Loading...</p>}
 
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Month</TableCell>
-              <TableCell>Building</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {globalBills
-              .filter((g) => showAll || g.status !== "COMPLETE")
-              .map((g) => (
-                <React.Fragment key={g.id}>
-                  <TableRow
-                    hover
-                    sx={{
-                      cursor: "pointer",
-                      bgcolor: getRowColor(billsMap[g.id] || []),
-                     }}
-                    onClick={() => handleToggleExpand(g)}
-                  >
-                    <TableCell>{g.month}</TableCell>
-                    <TableCell>{g.building}</TableCell>
-                    <TableCell>{g.status}</TableCell>
-                    <TableCell>
-                      {new Date(g.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
+      {/* Building buttons */}
+      <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: "wrap" }}>
+        {buildings.length === 0 ? (
+          <Typography variant="body1" color="text.secondary">
+            No bills in the system
+          </Typography>
+        ) : (
+          buildings.map((b) => (
+            <Button
+              key={b}
+              variant={b === selectedBuilding ? "contained" : "outlined"}
+              onClick={() => {
+                setSelectedBuilding(b);
+                setExpanded(null); // reset expanded row
+              }}
+            >
+              {b}
+            </Button>
+          ))
+        )}
+      </Stack>
 
-                  {expanded === g.id && (
-                    <AdminBillsFooter
-                      bills={billsMap[g.id] || []}
-                      colSpan={4}
-                      onRefresh={() => fetchBillsForGlobal(g.id)}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Building bills table */}
+      {selectedBuilding && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Bills for {selectedBuilding}
+          </Typography>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Month</TableCell>
+                  <TableCell>Building</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Created</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {globalBills
+                  .filter(
+                    (g) =>
+                      g.building === selectedBuilding &&
+                      (showAll || g.status !== "COMPLETE")
+                  )
+                  .map((g) => (
+                    <React.Fragment key={g.id}>
+                      <TableRow
+                        hover
+                        sx={{
+                          cursor: "pointer",
+                          bgcolor: getRowColor(billsMap[g.id] || []),
+                        }}
+                        onClick={() => handleToggleExpand(g)}
+                      >
+                        <TableCell>{g.month}</TableCell>
+                        <TableCell>{g.building}</TableCell>
+                        <TableCell>{g.status}</TableCell>
+                        <TableCell>
+                          {new Date(g.createdAt).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+
+                      {expanded === g.id && (
+                        <AdminBillsFooter
+                          bills={billsMap[g.id] || []}
+                          colSpan={4}
+                          onRefresh={() => fetchBillsForGlobal(g.id)}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
     </div>
   );
 };
