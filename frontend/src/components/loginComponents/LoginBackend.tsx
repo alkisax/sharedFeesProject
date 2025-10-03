@@ -8,15 +8,15 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import type { BackendJwtPayload } from '../../types/auth.types'
 import { UserAuthContext } from "../../context/UserAuthContext";
+import { VariablesContext } from "../../context/VariablesContext";
 
-interface Props {
-  url: string;
-}
-
-const LoginBackend = ({ url }: Props) => {
+const LoginBackend = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const { url } = useContext(VariablesContext);
+  
   const navigate = useNavigate();
 
   const { setUser, setIsLoading } = useContext(UserAuthContext);

@@ -32,7 +32,7 @@ const Login = () => {
       >
         <Typography variant="h5">Login</Typography>
         <Divider />
-        <LoginBackend url={url} />
+        <LoginBackend />
       </Paper>
     </Box>
   );
