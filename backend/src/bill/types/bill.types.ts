@@ -108,8 +108,8 @@ export interface CreateBill {
 // Χρησιμοποιείται για ενημέρωση κατάστασης (πληρωμένος/εγκεκριμένος) ή για notes/απόδειξη
 export interface UpdateBill {
   status?: BillStatus;
-  paymentMethod?: "CASH" | "BANK" | "OTHER"; // Τρόπος πληρωμής
-  paidAt?: Date;   // Ημερομηνία πληρωμής
-  receiptUrl?: string;
+  paymentMethod?: "CASH" | "BANK" | "OTHER" | null; // Τρόπος πληρωμής
+  paidAt?: Date | null;   // Ημερομηνία πληρωμής
+  receiptUrl?: string | null;
   notes?: string[];
 }

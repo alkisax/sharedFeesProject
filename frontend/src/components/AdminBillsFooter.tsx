@@ -441,6 +441,18 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
                       </TableRow>
                     ))}
                   </TableBody>
+                  {selectedBill.notes && selectedBill.notes.length > 0 && (
+                    <Box mt={2}>
+                      <Typography variant="subtitle2" gutterBottom>Notes:</Typography>
+                      <ul style={{ paddingLeft: "1.2rem", marginTop: 0 }}>
+                        {selectedBill.notes.map((note, idx) => (
+                          <li key={idx}>
+                            <Typography variant="body2">{note}</Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </Box>
+                  )}
                 </Table>
               </Box>
             </Box>

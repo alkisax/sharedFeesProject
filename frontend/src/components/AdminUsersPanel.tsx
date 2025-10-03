@@ -1,16 +1,20 @@
 // src/components/AdminUsersPanel.tsx
 import { useCallback, useContext, useEffect, useState } from "react";
 import axios from "axios";
-// import React from "react";
 import { VariablesContext } from "../context/VariablesContext";
 import { UserAuthContext } from "../context/UserAuthContext";
 import type { UserView } from "../types/auth.types";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Paper, Button, Dialog, DialogTitle, DialogContent,
-  Stack, Typography, IconButton, TextField, Box
+  Stack, Typography, IconButton, TextField, Box, Tooltip, useMediaQuery
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 export interface UserEditView extends UserView {
   password?: string;
@@ -37,6 +41,9 @@ const AdminUsersPanel = () => {
     flat: "",
     AFM: "",
   });
+
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
 
   // fetch all users
   const fetchAllUsers = useCallback(async () => {
@@ -237,37 +244,68 @@ const AdminUsersPanel = () => {
                       <TableCell>{user.balance ?? 0}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                            onClick={() => handleEdit(user)}     // ✅
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDelete(user)}   // ✅
-                          >
-                            Delete
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color={user.roles.includes("ADMIN") ? "warning" : "success"}
-                            size="small"
-                            onClick={() => handleToggleAdmin(user)} // ✅
-                          >
-                            {user.roles.includes("ADMIN") ? "Remove Admin" : "Make Admin"}
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => setViewUser(user)} // ✅ already fine
-                          >
-                            View More
-                          </Button>
+                          {isSmall ? (
+                            <>
+                              <Tooltip title="Edit">
+                                <IconButton size="small" onClick={() => handleEdit(user)}>
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton size="small" color="error" onClick={() => handleDelete(user)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={user.roles.includes("ADMIN") ? "Remove Admin" : "Make Admin"}>
+                                <IconButton
+                                  size="small"
+                                  color={user.roles.includes("ADMIN") ? "warning" : "success"}
+                                  onClick={() => handleToggleAdmin(user)}
+                                >
+                                  <AdminPanelSettingsIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="View More">
+                                <IconButton size="small" onClick={() => setViewUser(user)}>
+                                  <VisibilityIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                                onClick={() => handleEdit(user)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="error"
+                                size="small"
+                                onClick={() => handleDelete(user)}
+                              >
+                                Delete
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color={user.roles.includes("ADMIN") ? "warning" : "success"}
+                                size="small"
+                                onClick={() => handleToggleAdmin(user)}
+                              >
+                                {user.roles.includes("ADMIN") ? "Remove Admin" : "Make Admin"}
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => setViewUser(user)}
+                              >
+                                View More
+                              </Button>
+                            </>
+                          )}
                         </Stack>
                       </TableCell>
                     </TableRow>

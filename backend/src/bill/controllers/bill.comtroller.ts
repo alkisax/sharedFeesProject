@@ -141,14 +141,46 @@ export const markBillPaidInCash = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// cancel bill
+// cancel bill (really means "reject payment proof")
 export const cancelBill = async (req: AuthRequest, res: Response) => {
   try {
     const billId = req.params.id;
-    if (!billId) return res.status(400).json({ status: false, message: 'Bill ID is required' });
+    if (!billId) {
+      return res.status(400).json({ status: false, message: "Bill ID is required" });
+    }
 
-    const updated = await billDAO.update(billId, { status: "CANCELED" });
-    return res.status(200).json({ status: true, data: updated });
+    // fetch the bill first
+    const bill = await billDAO.readById(billId);
+    if (!bill) {
+      return res.status(404).json({ status: false, message: "Bill not found" });
+    }
+
+    // add a rejection note
+    const notes = bill.notes || [];
+    notes.push(
+      `Receipt rejected by ${req.user?.username || "Admin"} at ${new Date().toISOString()}`
+    );
+
+    // reset bill
+    const updated = await billDAO.update(billId, {
+      status: "UNPAID",
+      receiptUrl: null,
+      paymentMethod: null,
+      paidAt: null,
+      notes,
+    });
+
+    // ✅ add amount back to user balance
+    if (bill.userId && bill.amount) {
+      await userDAO.incrementBalance(bill.userId.toString(), bill.amount);
+    }
+
+    return res.status(200).json({
+      status: true,
+      data: updated,
+      message:
+        "Bill reset to UNPAID, receipt unlinked, and debt restored (file remains in uploads for review)",
+    });
   } catch (error) {
     return handleControllerError(res, error);
   }
