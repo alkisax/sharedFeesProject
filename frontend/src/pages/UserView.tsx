@@ -146,12 +146,12 @@ const Userview = () => {
         file,
       });
 
-      console.log("📂 Uploaded file response:", uploaded);
-      console.log("📎 Local file object:", {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
+      // console.log("📂 Uploaded file response:", uploaded);
+      // console.log("📎 Local file object:", {
+      //   name: file.name,
+      //   type: file.type,
+      //   size: file.size,
+      // });
 
       // make file accessible for admin review
       const receiptUrl = storage.getFileView({
@@ -159,7 +159,7 @@ const Userview = () => {
         fileId: uploaded.$id,
       });
 
-      console.log("🔗 Generated receiptUrl:", receiptUrl);
+      // console.log("🔗 Generated receiptUrl:", receiptUrl);
 
       // 2) mark bill as PENDING + attach receipt url (expects backend PATCH to accept it)
         await axios.patch(`${url}/api/bills/${bill.id}/pay`, {

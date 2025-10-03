@@ -12,6 +12,7 @@ interface CloudFile {
   name: string;
   mimeType: string;
   sizeOriginal: number;
+  $createdAt: string;
 }
 
 const AdminCloudUploadsPanel = () => {
@@ -98,7 +99,7 @@ const AdminCloudUploadsPanel = () => {
           >
             <ListItemText
               primary={f.name}
-              secondary={`${f.mimeType} — ${(f.sizeOriginal / 1024).toFixed(1)} KB`}
+              secondary={`${f.mimeType} — ${(f.sizeOriginal / 1024).toFixed(1)} KB — ${new Date(f.$createdAt).toLocaleString()}`}
             />
           </ListItem>
         ))}
