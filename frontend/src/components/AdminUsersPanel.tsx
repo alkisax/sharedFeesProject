@@ -1,7 +1,7 @@
 // src/components/AdminUsersPanel.tsx
 import { useCallback, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import React from "react";
+// import React from "react";
 import { VariablesContext } from "../context/VariablesContext";
 import { UserAuthContext } from "../context/UserAuthContext";
 import type { UserView } from "../types/auth.types";
@@ -113,7 +113,6 @@ const AdminUsersPanel = () => {
   const handleSaveEdit = async () => {
     if (!selectedUser) return;
 
-    // ✅ check confirm password if provided
     if (editForm.password && editForm.password !== editForm.confirmPassword) {
       alert("Passwords do not match");
       return;
@@ -121,8 +120,6 @@ const AdminUsersPanel = () => {
 
     try {
       const token = localStorage.getItem("token");
-
-      // ✅ remove confirmPassword before sending, strip empty strings
       const { confirmPassword, ...rest } = editForm;
       const payload = Object.fromEntries(
         Object.entries(rest).filter(([_, v]) => v !== "")
@@ -155,14 +152,11 @@ const AdminUsersPanel = () => {
     }
 
     try {
-      const { confirmPassword, ...rest } = createForm; // ✅ exclude confirmPassword
-
-      // ✅ remove fields with empty strings
+      const { confirmPassword, ...rest } = createForm;
       const payload = Object.fromEntries(
         Object.entries(rest).filter(([_, v]) => v !== "")
       );
 
-      console.log("Payload:", payload);
       const res = await axios.post(`${url}/api/users/signup/user`, payload);
 
       if (res.data.status) {
@@ -189,9 +183,7 @@ const AdminUsersPanel = () => {
     }
   };
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
+  if (isLoading) return <p>Loading...</p>;
 
   // group users by building
   const buildings = [...new Set(users.map((u) => u.building))];
@@ -243,14 +235,13 @@ const AdminUsersPanel = () => {
                       <TableCell>{user.lastname}</TableCell>
                       <TableCell>{user.flat}</TableCell>
                       <TableCell>{user.balance ?? 0}</TableCell>
-
                       <TableCell>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Button
                             variant="contained"
                             color="primary"
                             size="small"
-                            onClick={() => setSelectedUser(user)}
+                            onClick={() => handleEdit(user)}     // ✅
                           >
                             Edit
                           </Button>
@@ -258,7 +249,7 @@ const AdminUsersPanel = () => {
                             variant="contained"
                             color="error"
                             size="small"
-                            onClick={() => handleDelete(user)}
+                            onClick={() => handleDelete(user)}   // ✅
                           >
                             Delete
                           </Button>
@@ -266,14 +257,14 @@ const AdminUsersPanel = () => {
                             variant="contained"
                             color={user.roles.includes("ADMIN") ? "warning" : "success"}
                             size="small"
-                            onClick={() => handleToggleAdmin(user)}
+                            onClick={() => handleToggleAdmin(user)} // ✅
                           >
                             {user.roles.includes("ADMIN") ? "Remove Admin" : "Make Admin"}
                           </Button>
                           <Button
                             variant="outlined"
                             size="small"
-                            onClick={() => setViewUser(user)}
+                            onClick={() => setViewUser(user)} // ✅ already fine
                           >
                             View More
                           </Button>
@@ -286,6 +277,166 @@ const AdminUsersPanel = () => {
           </TableContainer>
         </Box>
       ))}
+
+      {/* Edit Modal */}
+      <Dialog open={!!selectedUser} onClose={() => setSelectedUser(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Edit User
+          <IconButton
+            aria-label="close"
+            onClick={() => setSelectedUser(null)}
+            sx={{ position: "absolute", right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {selectedUser && (
+            <Stack spacing={2} mt={2}>
+              <TextField
+                label="Username"
+                value={editForm.username || ""}
+                onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+              />
+              <TextField
+                label="Firstname"
+                value={editForm.firstname || ""}
+                onChange={e => setEditForm({ ...editForm, firstname: e.target.value })}
+              />
+              <TextField
+                label="Lastname"
+                value={editForm.lastname || ""}
+                onChange={e => setEditForm({ ...editForm, lastname: e.target.value })}
+              />
+              <TextField
+                label="Email"
+                value={editForm.email || ""}
+                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+              />
+              <TextField
+                label="AFM"
+                value={editForm.AFM || ""}
+                onChange={e => setEditForm({ ...editForm, AFM: e.target.value })}
+              />
+              <TextField
+                label="Building"
+                value={editForm.building || ""}
+                onChange={e => setEditForm({ ...editForm, building: e.target.value })}
+              />
+              <TextField
+                label="Flat"
+                value={editForm.flat || ""}
+                onChange={e => setEditForm({ ...editForm, flat: e.target.value })}
+              />
+              <TextField
+                label="Balance (€)"
+                type="number"
+                value={editForm.balance ?? ""}
+                onChange={e =>
+                  setEditForm({ ...editForm, balance: Number(e.target.value) })
+                }
+              />
+              <TextField
+                label="New Password"
+                type="password"
+                value={editForm.password || ""}
+                onChange={e => setEditForm({ ...editForm, password: e.target.value })}
+              />
+              <TextField
+                label="Confirm New Password"
+                type="password"
+                value={editForm.confirmPassword || ""}
+                onChange={e => setEditForm({ ...editForm, confirmPassword: e.target.value })}
+              />
+              <Stack direction="row" justifyContent="flex-end" spacing={2}>
+                <Button variant="outlined" onClick={() => setSelectedUser(null)}>Cancel</Button>
+                <Button variant="contained" onClick={handleSaveEdit}>Save</Button>
+              </Stack>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Modal */}
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create User</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={2}>
+            <TextField
+              label="Username"
+              value={createForm.username}
+              onChange={e => setCreateForm({ ...createForm, username: e.target.value })}
+              helperText="Use English characters for the username"
+            />
+            <TextField
+              label="Password"
+              type="password"
+              value={createForm.password}
+              onChange={e => setCreateForm({ ...createForm, password: e.target.value })}
+            />
+            <TextField
+              label="Confirm Password"
+              type="password"
+              value={createForm.confirmPassword}
+              onChange={e => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
+            />
+            <TextField
+              label="Firstname"
+              value={createForm.firstname}
+              onChange={e => setCreateForm({ ...createForm, firstname: e.target.value })}
+            />
+            <TextField
+              label="Lastname"
+              value={createForm.lastname}
+              onChange={e => setCreateForm({ ...createForm, lastname: e.target.value })}
+            />
+            <TextField
+              label="Email"
+              value={createForm.email}
+              onChange={e => setCreateForm({ ...createForm, email: e.target.value })}
+            />
+            <TextField
+              label="Building"
+              value={createForm.building}
+              onChange={e => setCreateForm({ ...createForm, building: e.target.value })}
+              helperText="Must match Excel: English, no spaces (e.g. Katerinis14)"
+            />
+            <TextField
+              label="Flat"
+              value={createForm.flat}
+              onChange={e => setCreateForm({ ...createForm, flat: e.target.value })}
+              helperText="Must match Excel exactly: Greek capital letters (e.g. Α1, ΙΣ)"
+            />
+            <TextField
+              label="AFM"
+              value={createForm.AFM}
+              onChange={e => setCreateForm({ ...createForm, AFM: e.target.value })}
+            />
+            <Stack direction="row" justifyContent="flex-end" spacing={2}>
+              <Button variant="outlined" onClick={() => setCreateOpen(false)}>Cancel</Button>
+              <Button variant="contained" onClick={handleCreateUser}>Create</Button>
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+
+      {/* View More Modal */}
+      <Dialog open={!!viewUser} onClose={() => setViewUser(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>User Details</DialogTitle>
+        <DialogContent>
+          {viewUser && (
+            <Stack spacing={1}>
+              <Typography><b>ID:</b> {viewUser.id}</Typography>
+              <Typography><b>Username:</b> {viewUser.username}</Typography>
+              <Typography><b>Email:</b> {viewUser.email}</Typography>
+              <Typography><b>Roles:</b> {viewUser.roles.join(", ")}</Typography>
+              <Typography><b>Building:</b> {viewUser.building}</Typography>
+              <Typography><b>Flat:</b> {viewUser.flat}</Typography>
+              <Typography><b>Balance:</b> {viewUser.balance ?? 0}</Typography>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

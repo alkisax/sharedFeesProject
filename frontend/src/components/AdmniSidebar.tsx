@@ -4,6 +4,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import PeopleIcon from '@mui/icons-material/People';
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 interface Props {
   onSelect: (panel: string) => void;
@@ -76,6 +77,16 @@ const AdminSidebar = ({ onSelect }: Props) => {
           >
             <ListItemIcon><PeopleIcon /></ListItemIcon>
             <ListItemText primary="Users" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={active === "uploads"}
+            onClick={() => handleSelect("uploads")}
+          >
+            <ListItemIcon><CloudUploadIcon /></ListItemIcon>
+            <ListItemText primary="Cloud Uploads" />
           </ListItemButton>
         </ListItem>
 
