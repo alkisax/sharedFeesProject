@@ -18,10 +18,16 @@ import {
   TableBody,
   TableHead,
   DialogActions,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CloseIcon from "@mui/icons-material/Close";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import TableChartIcon from "@mui/icons-material/TableChart"; // ✅ icon for popup button
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import DoneIcon from "@mui/icons-material/Done";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import axios from 'axios';
 import type { BillType } from '../types/excel.types';
 import { VariablesContext } from '../context/VariablesContext';
@@ -55,9 +61,11 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<BillType | null>(null);
 
-
   // ✅ state for popup tables
   const [openTables, setOpenTables] = useState(false);
+
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
 
   // extend types
   const handleAction = async (
@@ -116,57 +124,113 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
               <Stack direction="row" spacing={1} alignItems="center">
                 {/* ❌ Cancel available only on PENDING or PAID */}
                 {(b.status === "PENDING" || b.status === "PAID") && (
-                  <Tooltip title="Cancel this bill">
-                    <IconButton
+                  isSmall ? (
+                    <Tooltip title="Cancel this bill">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => setConfirmCancel(b.id)}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
                       size="small"
+                      variant="outlined"
                       color="error"
                       onClick={() => setConfirmCancel(b.id)}
                     >
-                      <CloseIcon />
-                    </IconButton>
-                  </Tooltip>
+                      Cancel
+                    </Button>
+                  )
                 )}
 
                 {b.receiptUrl && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setViewUrl(b.receiptUrl!)}
-                  >
-                    View Receipt
-                  </Button>
+                  isSmall ? (
+                    <Tooltip title="View Receipt">
+                      <IconButton
+                        size="small"
+                        onClick={() => setViewUrl(b.receiptUrl!)}
+                      >
+                        <ReceiptIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setViewUrl(b.receiptUrl!)}
+                    >
+                      View Receipt
+                    </Button>
+                  )
                 )}
 
                 {b.status === "PENDING" && (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleAction(b.id, "approve")}
-                  >
-                    Approve
-                  </Button>
+                  isSmall ? (
+                    <Tooltip title="Approve">
+                      <IconButton
+                        size="small"
+                        color="success"
+                        onClick={() => handleAction(b.id, "approve")}
+                      >
+                        <DoneIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleAction(b.id, "approve")}
+                    >
+                      Approve
+                    </Button>
+                  )
                 )}
 
                 {b.status === "UNPAID" && (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleAction(b.id, "cash")}
-                  >
-                    Paid in Cash
-                  </Button>
+                  isSmall ? (
+                    <Tooltip title="Paid in Cash">
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={() => handleAction(b.id, "cash")}
+                      >
+                        <AttachMoneyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleAction(b.id, "cash")}
+                    >
+                      Paid in Cash
+                    </Button>
+                  )
                 )}
 
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setSelectedBill(b)}
-                >
-                  View
-                </Button>
-
+                {isSmall ? (
+                  <Tooltip title="View Details">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSelectedBill(b)}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setSelectedBill(b)}
+                  >
+                    View
+                  </Button>
+                )}
 
                 <Chip label={b.status} color={statusColor(b.status)} size="small" />
               </Stack>
@@ -286,7 +350,6 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
         </DialogContent>
       </Dialog>
 
-
       {/* Receipt Preview */}
       <Dialog open={!!viewUrl} onClose={() => setViewUrl(null)} maxWidth='md' fullWidth>
         <DialogTitle>Receipt Preview</DialogTitle>
@@ -387,7 +450,6 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
           <Button onClick={() => setSelectedBill(null)}>Close</Button>
         </DialogActions>
       </Dialog>
-
     </>
   );
 };
