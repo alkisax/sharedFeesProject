@@ -112,8 +112,12 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
+export const isLogedin = async (_req: Request, res: Response) => {
+  return res.status(200).json({ status: true, message: 'is loged in' })
+}
 
 export const authController = {
   login,
+  isLogedin,
   refreshToken,
 };

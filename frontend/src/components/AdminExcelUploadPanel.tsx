@@ -14,6 +14,8 @@ import {
 } from "@mui/material";
 import { VariablesContext } from '../context/VariablesContext';
 import type { ExcelResponse, ExcelRow } from "../types/excel.types";
+import { account, storage } from '../lib/appwriteConfig';
+import { ID } from 'appwrite';
 
 const AdminExcelUploadPanel = () => {
   const { url } = useContext(VariablesContext);
@@ -21,33 +23,83 @@ const AdminExcelUploadPanel = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ExcelResponse | null>(null);
 
-  const handleUpload = async () => {
+  const handleUploadAppwrite = async (): Promise<void> => {
     if (!file) return;
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // ensure session
+      try {
+        await account.get();
+      } catch {
+        await account.createAnonymousSession();
+      }
 
-      const res = await axios.post<ExcelResponse>(
-        `${url}/api/excel/upload`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      // ensure sender has token
+      const token = localStorage.getItem('token');
+      const authCheck  = await axios.get<{ status: Boolean, message: string}>(
+        `${url}/api/auth/is-logedin`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (!authCheck.data.status) {
+        console.log('user is not loged in')
+        return;
+      } else {
+        console.log('is-logedin passed')
+      }
+
+      // upload to Appwrite
+      const uploaded = await storage.createFile({
+        bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID,
+        fileId: ID.unique(),
+        file,
+      });
+
+      const res = await axios.post<ExcelResponse>(`${url}/api/excel/process`, {
+        fileId: uploaded.$id,
+        originalName: file.name,
+      });
 
       setResult(res.data);
     } catch (err: unknown) {
-      setResult({
-        status: false,
-        message:
-          axios.isAxiosError(err) && err.response?.data?.message
-            ? err.response.data.message
-            : "Upload failed",
-      });
+      const message =
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : 'Upload failed';
+      setResult({ status: false, message });
     } finally {
       setLoading(false);
     }
   };
+
+  // this is the old Multer way of uploading the excel file. is kept here for future use
+  // const handleUploadMulter = async () => {
+  //   if (!file) return;
+  //   setLoading(true);
+
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
+
+  //     const res = await axios.post<ExcelResponse>(
+  //       `${url}/api/excel/upload`,
+  //       formData,
+  //       { headers: { "Content-Type": "multipart/form-data" } }
+  //     );
+
+  //     setResult(res.data);
+  //   } catch (err: unknown) {
+  //     setResult({
+  //       status: false,
+  //       message:
+  //         axios.isAxiosError(err) && err.response?.data?.message
+  //           ? err.response.data.message
+  //           : "Upload failed",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const renderGlobalInfoTable = (rows: ExcelRow[]) => {
     if (rows.length === 0) return null;
@@ -186,7 +238,7 @@ const AdminExcelUploadPanel = () => {
         variant="contained"
         sx={{ ml: 2 }}
         disabled={!file || loading}
-        onClick={handleUpload}
+        onClick={handleUploadAppwrite}
       >
         {loading ? <CircularProgress size={20} /> : "Upload"}
       </Button>

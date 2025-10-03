@@ -15,12 +15,15 @@ function App() {
       <Routes>
         <Route element={<LayoutWithNavbar />}>
           <Route path="/" element={<Home />} />
+
           <Route element={<AdminPrivateRoute />}>
             <Route path="/admin" element={<AdminLayout />} />
           </Route>
+
           <Route element={<PrivateRoute />}>
             <Route path="/user" element={<UserView />} />
           </Route>
+          
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/profile' element={<Profile />} />
