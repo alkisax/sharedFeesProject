@@ -50,6 +50,15 @@ const billSchema = new Schema<IBill>(
       enum: ["UNPAID", "PENDING", "PAID", "CANCELED"],
       default: "UNPAID",
     },
+    paymentMethod: {
+      type: String,
+      enum: ["CASH", "BANK", "STRIPE", "OTHER"],
+      required: false, // Τρόπος πληρωμής
+    },
+    paidAt: {
+      type: Date,
+      required: false, // Ημερομηνία πληρωμής
+    },
     receiptUrl: {
       type: String,
       required: false,

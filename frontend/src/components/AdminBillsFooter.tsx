@@ -53,16 +53,26 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
 
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
+  const [selectedBill, setSelectedBill] = useState<BillType | null>(null);
+
 
   // ✅ state for popup tables
   const [openTables, setOpenTables] = useState(false);
 
-  const handleAction = async (billId: string, action: 'approve' | 'cancel') => {
+  // extend types
+  const handleAction = async (
+    billId: string,
+    action: 'approve' | 'cancel' | 'cash'
+  ) => {
     try {
-      const endpoint =
-        action === 'approve'
-          ? `${url}/api/bills/${billId}/approve`
-          : `${url}/api/bills/${billId}/cancel`;
+      let endpoint = '';
+      if (action === 'approve') {
+        endpoint = `${url}/api/bills/${billId}/approve`;
+      } else if (action === 'cancel') {
+        endpoint = `${url}/api/bills/${billId}/cancel`;
+      } else if (action === 'cash') {
+        endpoint = `${url}/api/bills/${billId}/pay-cash`;
+      }
 
       await axios.patch(
         endpoint,
@@ -137,6 +147,26 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
                     Approve
                   </Button>
                 )}
+
+                {b.status === "UNPAID" && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleAction(b.id, "cash")}
+                  >
+                    Paid in Cash
+                  </Button>
+                )}
+
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setSelectedBill(b)}
+                >
+                  View
+                </Button>
+
 
                 <Chip label={b.status} color={statusColor(b.status)} size="small" />
               </Stack>
@@ -307,6 +337,57 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* bill details popup */}
+      <Dialog
+        open={!!selectedBill}
+        onClose={() => setSelectedBill(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Bill Details</DialogTitle>
+        <DialogContent dividers>
+          {selectedBill && (
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                {selectedBill.flat} – {selectedBill.ownerName}
+              </Typography>
+              <Typography>Status: {selectedBill.status}</Typography>
+              {selectedBill.paymentMethod && (
+                <Typography>Payment Method: {selectedBill.paymentMethod}</Typography>
+              )}
+              {selectedBill.paidAt && (
+                <Typography>Paid At: {new Date(selectedBill.paidAt).toLocaleString()}</Typography>
+              )}
+              <Typography>Total Amount: {selectedBill.amount} €</Typography>
+
+              <Box mt={2}>
+                <Typography variant="subtitle2">Breakdown:</Typography>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Category</TableCell>
+                      <TableCell align="right">Amount (€)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(selectedBill.breakdown).map(([cat, val]) => (
+                      <TableRow key={cat}>
+                        <TableCell>{cat}</TableCell>
+                        <TableCell align="right">{val}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedBill(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
     </>
   );
 };

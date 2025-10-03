@@ -34,9 +34,10 @@ export interface BillType {
   breakdown: Record<string, number>;
   amount: number;
   status: 'UNPAID' | 'PENDING' | 'PAID' | 'CANCELED';
+  paymentMethod?: 'CASH' | 'BANK' | 'STRIPE' | 'OTHER'; // τρόπος πληρωμής
+  paidAt?: string;                                      // ημερομηνία πληρωμής
   notes?: string[];
   receiptUrl?: string;       // optional, for upload link
   createdAt?: string;
   updatedAt?: string;
 }
-

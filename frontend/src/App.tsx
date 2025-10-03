@@ -23,7 +23,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/user" element={<UserView />} />
           </Route>
-          
+
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/profile' element={<Profile />} />

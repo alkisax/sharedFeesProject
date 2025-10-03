@@ -94,14 +94,46 @@ export const approveBill = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ status: false, message: "Bill not found" });
     }
 
-    // update the bill status
-    const updated = await billDAO.update(billId, { status: "PAID" });
+    // update the bill status + payment info (BANK by default here)
+    const updated = await billDAO.update(billId, {
+      status: "PAID",
+      paymentMethod: "BANK",
+      paidAt: new Date()
+    });
 
     // credit back to user balance
     // db actions should be in dao ✅
-    // credit back to user balance
     await userDAO.incrementBalance(bill.userId.toString(), Math.abs(bill.amount));
 
+    return res.status(200).json({ status: true, data: updated });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+};
+
+// mark bill as paid in cash (admin)
+export const markBillPaidInCash = async (req: AuthRequest, res: Response) => {
+  try {
+    const billId = req.params.id;
+    if (!billId) {
+      return res.status(400).json({ status: false, message: "Bill ID is required" });
+    }
+
+    // find the bill first
+    const bill = await billDAO.toServerById(billId);
+    if (!bill) {
+      return res.status(404).json({ status: false, message: "Bill not found" });
+    }
+
+    // update the bill status + payment info (CASH)
+    const updated = await billDAO.update(billId, {
+      status: "PAID",
+      paymentMethod: "CASH",
+      paidAt: new Date()
+    });
+
+    // credit back to user balance
+    await userDAO.incrementBalance(bill.userId.toString(), Math.abs(bill.amount));
 
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
@@ -121,8 +153,6 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
     return handleControllerError(res, error);
   }
 };
-
-
 
 // update bill (admin use)
 export const updateBillById = async (req: Request, res: Response) => {
@@ -161,6 +191,7 @@ export const billController = {
   findMyBills,
   markBillAsPaid,
   approveBill,
+  markBillPaidInCash,
   updateBillById,
   cancelBill,
   deleteBillById
