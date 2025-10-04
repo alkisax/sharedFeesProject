@@ -37,6 +37,31 @@ const sendNewBillEmail = async (req: Request, res: Response) => {
   }
 };
 
+const notifyAdminPending = async (req: Request, res: Response) => {
+  try {
+    const { billId, building, flat, amount } = req.body
+    const adminEmail = process.env.EMAIL_USER
+
+    if (!adminEmail) {
+      return res.status(400).json({ status: false, message: 'Missing admin email in env' })
+    }
+
+    const subject = `Pending payment review for ${building} - ${flat}`
+    const text = `A user has submitted a receipt for bill ${billId}.\nBuilding: ${building}\nFlat: ${flat}\nAmount: ${amount} €.\nPlease review it in the admin panel.`
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: adminEmail,
+      subject,
+      text,
+    })
+
+    return res.json({ status: true, message: 'Notification email sent to admin.' })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
 const sendMassEmailToBuilding = async (req: Request, res: Response) => {
   try {
     const { building, emailSubject, emailTextBody } = req.body
@@ -69,5 +94,6 @@ const sendMassEmailToBuilding = async (req: Request, res: Response) => {
 
 export const emailController = {
   sendNewBillEmail,
+  notifyAdminPending,
   sendMassEmailToBuilding
 };

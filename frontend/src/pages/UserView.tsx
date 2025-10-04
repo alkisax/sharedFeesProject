@@ -189,6 +189,26 @@ const Userview = () => {
     }
   };
 
+  const notifyAdmin = async (bill: BillType) => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await axios.post(
+        `${url}/api/email/notify-admin`,
+        {
+          billId: bill.id,
+          building: bill.building,
+          flat: bill.flat,
+          amount: bill.amount,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      alert(res.data.message || 'Εστάλη ειδοποίηση στον διαχειριστή.')
+    } catch (err) {
+      console.error('notifyAdmin error:', err)
+      alert('Αποτυχία αποστολής ειδοποίησης.')
+    }
+  }
+
   return (
     <Box>
       <Typography variant='h5' gutterBottom>
@@ -248,11 +268,21 @@ const Userview = () => {
                         </Button>
                       </Box>
                     )}
-                    {!allowUpload && (
+                    {b.status === 'PENDING' && (
+                      <Button
+                        variant='outlined'
+                        color='info'
+                        size='small'
+                        onClick={() => notifyAdmin(b)}
+                      >
+                        Ειδοποίηση Διαχειριστή
+                      </Button>
+                    )}
+                    {/* {!allowUpload && (
                       <Typography variant='body2' sx={{ opacity: 0.7 }}>
                         Δεν απαιτείται απόδειξη
                       </Typography>
-                    )}
+                    )} */}
                     {errors[b.id] && (
                       <Typography variant='caption' color='error' display='block'>
                         {errors[b.id]}

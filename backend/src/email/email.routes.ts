@@ -8,6 +8,8 @@ const router = express.Router()
 // Single-user notification (legacy)
 router.post('/send-new', middleware.verifyToken, middleware.checkRole('ADMIN'), emailController.sendNewBillEmail)
 
+// for user to notify admin that has turned bill into pending
+router.post('/notify-admin', middleware.verifyToken, emailController.notifyAdminPending)
 
 // Mass mail per building
 router.post('/send-mass', middleware.verifyToken, middleware.checkRole('ADMIN'), emailController.sendMassEmailToBuilding)
