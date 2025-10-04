@@ -21,6 +21,7 @@ import type { GlobalBillType, BillType } from "../types/excel.types";
 import React from "react";
 import AdminBillsFooter from "./AdminBillsFooter";
 import AdminBuildingMailer from "./AdminBuildingMailer";
+import { Pagination } from "@mui/material";
 
 const AdminBillsPanel = () => {
   const { url } = useContext(VariablesContext);
@@ -34,6 +35,13 @@ const AdminBillsPanel = () => {
   const [buildings, setBuildings] = useState<string[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [buildingEmails, setBuildingEmails] = useState<string[]>([])
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 12;
+
+  useEffect(() => {
+    setPage(1)
+    setExpanded(null)
+  }, [selectedBuilding, showAll])
 
   const fetchGlobalBills = useCallback(async () => {
     try {
@@ -135,12 +143,41 @@ const AdminBillsPanel = () => {
   };
 
   const getRowColor = (bills: BillType[]): string => {
+    // // test logs
+    //   const statuses = bills.map(b => b.status)
+    // console.log('Bill statuses for color check:', statuses)
     if (bills.some((b) => b.status === "PENDING")) return "#e5f0ff"; // light blue
     if (bills.some((b) => b.status === "UNPAID")) return "#ffe5e5"; // light red
     if (bills.length > 0 && bills.every((b) => b.status === "PAID"))
       return "#e5ffe5"; // light green
     return "inherit";
   };
+
+  // prepare filtered + paginated list
+  const filteredBills = globalBills.filter(
+    g =>
+      g.building === selectedBuilding &&
+      (showAll || g.status.toUpperCase() !== 'COMPLETE')
+  )
+
+  const paginatedBills = filteredBills.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  )
+
+// console.log('--- FILTER DEBUG ---')
+// console.log('showAll:', showAll)
+// console.log('selectedBuilding:', selectedBuilding)
+// console.log(
+//   'status counts:',
+//   globalBills
+//     .filter(g => g.building === selectedBuilding)
+//     .reduce<Record<string, number>>((acc, g) => {
+//       const s = g.status?.toUpperCase() || 'UNKNOWN'
+//       acc[s] = (acc[s] || 0) + 1
+//       return acc
+//     }, {})
+// )
 
   return (
     <div>
@@ -209,42 +246,49 @@ const AdminBillsPanel = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {globalBills
-                  .filter(
-                    (g) =>
-                      g.building === selectedBuilding &&
-                      (showAll || g.status !== "COMPLETE")
-                  )
-                  .map((g) => (
-                    <React.Fragment key={g.id}>
-                      <TableRow
-                        hover
-                        sx={{
-                          cursor: "pointer",
-                          bgcolor: getRowColor(billsMap[g.id] || []),
-                        }}
-                        onClick={() => handleToggleExpand(g)}
-                      >
-                        <TableCell>{g.month}</TableCell>
-                        <TableCell>{g.building}</TableCell>
-                        <TableCell>{g.status}</TableCell>
-                        <TableCell>
-                          {new Date(g.createdAt).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
+                {paginatedBills.map((g) => (
+                  <React.Fragment key={g.id}>
+                    <TableRow
+                      hover
+                      sx={{
+                        cursor: "pointer",
+                        bgcolor: getRowColor(billsMap[g.id] || []),
+                      }}
+                      onClick={() => handleToggleExpand(g)}
+                    >
+                      <TableCell>{g.month}</TableCell>
+                      <TableCell>{g.building}</TableCell>
+                      <TableCell>{g.status}</TableCell>
+                      <TableCell>
+                        {new Date(g.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
 
-                      {expanded === g.id && (
-                        <AdminBillsFooter
-                          bills={billsMap[g.id] || []}
-                          colSpan={4}
-                          onRefresh={() => fetchBillsForGlobal(g.id)}
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
+                    {expanded === g.id && (
+                      <AdminBillsFooter
+                        bills={billsMap[g.id] || []}
+                        colSpan={4}
+                        onRefresh={() => {
+                          fetchBillsForGlobal(g.id)
+                          fetchGlobalBills()
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
+          {filteredBills.length > rowsPerPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Pagination
+                count={Math.ceil(filteredBills.length / rowsPerPage)}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+                color="primary"
+              />
+            </Box>
+          )}
         </Box>
       )}
     </div>

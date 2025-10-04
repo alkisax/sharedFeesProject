@@ -1,5 +1,6 @@
 import type { IGlobalBill, GlobalBillView, CreateGlobalBill, GlobalBillStatus } from "../types/bill.types";
 import GlobalBill from "../models/globalBill.model";
+import BillModel from '../models/bill.model'
 
 // Response DAO (safe to send to client)
 export const toGlobalBillDAO = (bill: IGlobalBill): GlobalBillView => {
@@ -91,6 +92,26 @@ const deleteById = async (id: string): Promise<GlobalBillView> => {
   return toGlobalBillDAO(response as IGlobalBill);
 };
 
+ const updateGlobalBillStatus = async (globalBillId: string) => {
+  const bills = await BillModel.find({ globalBillId })
+  if (bills.length === 0) return
+
+  const allPaid = bills.every(b => b.status === 'PAID')
+  const anyUnpaidOrPending = bills.some(
+    b => b.status === 'UNPAID' || b.status === 'PENDING'
+  )
+
+  let newStatus = 'OPEN'
+  if (allPaid) {
+    newStatus = 'COMPLETE'
+  }
+  else if (anyUnpaidOrPending) {
+    newStatus = 'OPEN'
+  }
+
+  await GlobalBill.findByIdAndUpdate(globalBillId, { status: newStatus })
+}
+
 export const globalBillDAO = {
   toGlobalBillDAO,
   create,
@@ -101,4 +122,5 @@ export const globalBillDAO = {
   toServerById,
   update,
   deleteById,
+  updateGlobalBillStatus
 };

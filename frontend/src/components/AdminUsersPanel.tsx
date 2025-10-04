@@ -241,7 +241,9 @@ const AdminUsersPanel = () => {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.lastname}</TableCell>
                       <TableCell>{user.flat}</TableCell>
-                      <TableCell>{user.balance ?? 0}</TableCell>
+                      <TableCell>
+                        {user.balance != null ? user.balance.toFixed(2) : '0.00'}
+                      </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           {isSmall ? (

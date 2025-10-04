@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { handleControllerError } from '../../utils/error/errorHandler'
 import { billDAO } from '../dao/bill.dao'
-// import User from '../../login/models/users.models'
+import { globalBillDAO } from '../dao/globalBill.dao'
 
 import type { Request, Response } from 'express'
 import type { AuthRequest } from '../../login/types/user.types'
@@ -105,6 +105,9 @@ export const approveBill = async (req: AuthRequest, res: Response) => {
     // db actions should be in dao ✅
     await userDAO.incrementBalance(bill.userId.toString(), Math.abs(bill.amount));
 
+    // 🔍 check if global bill should now close
+    await globalBillDAO.updateGlobalBillStatus(bill.globalBillId.toString())
+
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
     return handleControllerError(res, error);
@@ -112,7 +115,7 @@ export const approveBill = async (req: AuthRequest, res: Response) => {
 };
 
 // mark bill as paid in cash (admin)
-export const markBillPaidInCash = async (req: AuthRequest, res: Response) => {
+const markBillPaidInCash = async (req: AuthRequest, res: Response) => {
   try {
     const billId = req.params.id;
     if (!billId) {
@@ -134,6 +137,9 @@ export const markBillPaidInCash = async (req: AuthRequest, res: Response) => {
 
     // credit back to user balance
     await userDAO.incrementBalance(bill.userId.toString(), Math.abs(bill.amount));
+
+    // 🔍 check if global bill should now close
+    await globalBillDAO.updateGlobalBillStatus(bill.globalBillId.toString())
 
     return res.status(200).json({ status: true, data: updated });
   } catch (error) {
@@ -174,6 +180,9 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
     if (bill.userId && bill.amount) {
       await userDAO.incrementBalance(bill.userId.toString(), bill.amount);
     }
+
+    // ✅ check if global bill should reopen
+    await globalBillDAO.updateGlobalBillStatus(bill.globalBillId.toString())
 
     return res.status(200).json({
       status: true,
