@@ -55,6 +55,7 @@ const AdminExcelUploadPanel = () => {
         file,
       });
 
+      // send backend for automating parsing and bill creation
       const res = await axios.post<ExcelResponse>(`${url}/api/excel/process`, {
         fileId: uploaded.$id,
         originalName: file.name,
