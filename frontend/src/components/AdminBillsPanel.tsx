@@ -20,6 +20,7 @@ import { VariablesContext } from "../context/VariablesContext";
 import type { GlobalBillType, BillType } from "../types/excel.types";
 import React from "react";
 import AdminBillsFooter from "./AdminBillsFooter";
+import AdminBuildingMailer from "./AdminBuildingMailer";
 
 const AdminBillsPanel = () => {
   const { url } = useContext(VariablesContext);
@@ -32,6 +33,7 @@ const AdminBillsPanel = () => {
 
   const [buildings, setBuildings] = useState<string[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+  const [buildingEmails, setBuildingEmails] = useState<string[]>([])
 
   const fetchGlobalBills = useCallback(async () => {
     try {
@@ -93,6 +95,34 @@ const AdminBillsPanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalBills]);
 
+  // create an array with all the building emails
+  const fetchEmailsForBuilding = useCallback(async (buildingName: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await axios.get<{ status: boolean; data: any[] }>(
+        `${url}/api/users`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      const users = res.data.data
+      const emails = users
+        .filter(u => u.building === buildingName && !!u.email)
+        .map(u => u.email)
+
+      setBuildingEmails(emails)
+    } catch (err) {
+      console.error('Error fetching emails:', err)
+      setBuildingEmails([])
+    }
+  }, [url])
+
+  useEffect(() => {
+    if (selectedBuilding) {
+      fetchEmailsForBuilding(selectedBuilding)
+    }
+  }, [selectedBuilding, fetchEmailsForBuilding])
+
+
   const handleToggleExpand = (gb: GlobalBillType) => {
     if (expanded === gb.id) {
       setExpanded(null);
@@ -152,6 +182,14 @@ const AdminBillsPanel = () => {
           ))
         )}
       </Stack>
+
+      {/* 📨 Mass mailer section */}
+      {selectedBuilding && (
+        <AdminBuildingMailer
+          building={selectedBuilding}
+          emails={buildingEmails}
+        />
+      )}
 
       {/* Building bills table */}
       {selectedBuilding && (

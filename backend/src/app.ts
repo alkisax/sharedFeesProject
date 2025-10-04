@@ -16,6 +16,7 @@ import userRoutes from './login/routes/user.routes';
 import billRoutes from './bill//routes/bill.routes'
 import globalBillRoutes from './bill/routes/globalBill.routes'
 import excelRoutes from './xlsxParser/excel.routes'
+import emailRoutes from './email/email.routes'
 
 const app = express();
 
@@ -130,8 +131,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/bills', billRoutes)
 app.use('/api/global-bills', globalBillRoutes)
 app.use('/api/excel', excelRoutes)
-
-// app.use('/api/email', emailRoutes);
+app.use('/api/email', emailRoutes);
 
 app.use('/api/upload-multer', uploadMulterRoutes);
 
