@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
-import ApartmentImg from "../assets/norman.png";
+// import ApartmentImg from "../assets/norman.png";
+import StepsImg from "../assets/patras-steps.jpg"
 
 const Home = () => {
   return (
@@ -16,8 +17,8 @@ const Home = () => {
       >
         <Box
           component="img"
-          src={ApartmentImg}
-          alt="Apartment building"
+          src={StepsImg}
+          alt="εικόνα της θέας απο τα σκαλάκια αγίου νικολάου"
           sx={{
             width: "100%",
             height: "100%",

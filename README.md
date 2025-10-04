@@ -1,10 +1,13 @@
 # 🏢 Shared Fees Management App
 
-A full-stack MERN + TypeScript application for **building expense management**.  
+A full-stack MERN + TypeScript application for **building expense management** built in as a real request.  
 Admins can upload monthly Excel files with expenses, which are automatically parsed into bills per apartment.  
 Users can log in, view their bills, upload payment receipts, and track their balance.  
 Admins review and approve payments, manage users, and monitor overall building balances.
+- **End‑to‑end architecture** (MongoDB → Express → React → Appwrite).
+- **Automations** (Excel → GlobalBill + Bills), **role‑based dashboards**, **file uploads**, **email workflows**.
 
+- **deployed**: https://sharedfeesproject.onrender.com
 ---
 
 ## 🚀 Tech Stack
@@ -33,17 +36,24 @@ Admins review and approve payments, manage users, and monitor overall building b
 ## ✨ Features
 
 ### 👤 User
-- Login & signup with JWT authentication.
+- **Login & signup** with JWT authentication.
 - View current and past bills.
-- Upload receipt files (PDF or image) for bill payment.
+- **Upload receipt** files (PDF or image) for bill payment.
+- **Notify admin** after upload (email).
 - Track personal balance.
 
 ### 👨‍💼 Admin
-- Upload Excel files → automatically generate **GlobalBill** + **per-user Bills**.
-- View all global bills and expand to see user bills.
-- Approve or cancel user payments.
-- Manage users: create, edit, delete, toggle admin role.
+- **Upload Excel** files → automatically generate **GlobalBill** + **per-user Bills**.
+- **Multi‑building** view: switch buildings, see GlobalBills and per‑user bills
+- **Mass Building Mailer**: send custom emails to all tenants of a building.
+- **Cloud Uploads Panel**: browse/preview/delete Appwrite files.
+- **User management**: create, edit, delete, toggle admin role, view balances.
 - View per-user balances.
+
+### 🔔 Email Automations
+- User → Admin: receipt uploaded (notify admin).
+- Admin → Users: mass building announcements.
+- Optional hooks ready for: new bill generated, bill approved, bill canceled.
 
 ---
 
