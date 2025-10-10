@@ -1,3 +1,6 @@
+//https://resend.com/emails
+//https://www.namecheap.com
+
 import type { Request, Response } from 'express'
 import { Resend } from 'resend'
 import { handleControllerError } from '../utils/error/errorHandler'
@@ -80,34 +83,56 @@ const notifyAdminPending = async (req: Request, res: Response) => {
 }
 
 // =============================
-// 📧 Mass mail to all users in a building
+// 📧 Mass mail to all users in a building (with debug logging)
 // =============================
 const sendMassEmailToBuilding = async (req: Request, res: Response) => {
   try {
     const { building, emailSubject, emailTextBody, emails } = req.body
 
+    console.log('📨 Mass email request received:', {
+      building,
+      recipients: emails?.length || 0,
+      subject: emailSubject,
+    })
+
     if (!building || !emailSubject || !emailTextBody) {
-      return res.status(400).json({ status: false, message: 'Missing building or message' })
+      console.error('❌ Missing required fields:', { building, emailSubject, emailTextBody })
+      return res
+        .status(400)
+        .json({ status: false, message: 'Missing building or message' })
     }
 
     if (!emails || emails.length === 0) {
-      return res.status(404).json({ status: false, message: 'No users with email found for this building' })
+      console.warn('⚠️ No user emails provided for building:', building)
+      return res
+        .status(404)
+        .json({ status: false, message: 'No users with email found for this building' })
     }
 
     const results = await Promise.allSettled(
-      emails.map((to: string) =>
-        resend.emails.send({
-          from: 'Shared Fees <noreply@sharedfeesproject.space>',
-          to,
-          subject: emailSubject || `Νέος λογαριασμός για το κτίριο ${building}`,
-          text: emailTextBody,
-          html: `<p>${emailTextBody}</p>`,
-        })
-      )
+      emails.map(async (to: string) => {
+        try {
+          const response = await resend.emails.send({
+            from: 'Shared Fees <noreply@sharedfeesproject.space>',
+            to,
+            subject: emailSubject || `Νέος λογαριασμός για το κτίριο ${building}`,
+            text: emailTextBody,
+            html: `<p>${emailTextBody}</p>`,
+          })
+
+          console.log(`✅ Email sent to ${to}`, response)
+          return response
+        } catch (err) {
+          console.error(`❌ Failed to send email to ${to}:`, err)
+          throw err
+        }
+      })
     )
 
     const sent = results.filter(r => r.status === 'fulfilled').length
     const failed = results.length - sent
+
+    console.log(`📊 Mass mail summary for ${building}: sent=${sent}, failed=${failed}`)
 
     return res.json({
       status: failed === 0,
@@ -115,6 +140,7 @@ const sendMassEmailToBuilding = async (req: Request, res: Response) => {
       failed,
     })
   } catch (error) {
+    console.error('🔥 sendMassEmailToBuilding unexpected error:', error)
     return handleControllerError(res, error)
   }
 }
