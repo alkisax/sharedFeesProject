@@ -47,7 +47,7 @@ const sendNewBillEmail = async (req: Request, res: Response) => {
 const notifyAdminPending = async (req: Request, res: Response) => {
   try {
     const { billId, building, flat, amount } = req.body
-    const adminEmail = process.env.EMAIL_USER
+    const adminEmail = process.env.EMAIL_ADMIN
 
     if (!adminEmail) {
       return res
