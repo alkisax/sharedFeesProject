@@ -19,14 +19,13 @@ const sendNewBillEmail = async (req: Request, res: Response) => {
     }
 
     const lastname = body.lastname || user.lastname || ''
-    const emailSubject: string =
-      body.emailSubject || 'Νέος λογαριασμός κοινοχρήστων'
-    const emailTextBody: string =
+    const emailSubject = body.emailSubject || 'Νέος λογαριασμός κοινοχρήστων'
+    const emailTextBody =
       body.emailTextBody ||
       'Αγαπητοί κάτοικοι, θα θέλαμε να σας ενημερώσουμε πως έχει εκδοθεί ένας νέος λογαριασμός κοινοχρήστων. Παρακαλώ επισκεφθείτε https://sharedfeesproject.onrender.com .'
 
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev', // ✅ replace later with your verified sender
+      from: 'Shared Fees <noreply@sharedfeesproject.space>',
       to: user.email,
       subject: emailSubject,
       text: `Αγαπητέ/ή ${lastname}, ${emailTextBody}`,
@@ -54,36 +53,27 @@ const notifyAdminPending = async (req: Request, res: Response) => {
     }
 
     await resend.emails.send({
-      from: 'Shared Fees <onboarding@resend.dev>',
+      from: 'Shared Fees <noreply@sharedfeesproject.space>',
       to: adminEmail,
       subject: `Pending payment review for ${building} - ${flat}`,
       text: `Ένας χρήστης υπέβαλε απόδειξη για τον λογαριασμό ${billId}.
-    Κτίριο: ${building}
-    Διαμέρισμα: ${flat}
-    Ποσό: ${amount} €.
-    Παρακαλώ ελέγξτε τον πίνακα διαχειριστή.`,
+Κτίριο: ${building}
+Διαμέρισμα: ${flat}
+Ποσό: ${amount} €.
+Παρακαλώ ελέγξτε τον πίνακα διαχειριστή.`,
       html: `
-        <!DOCTYPE html>
         <html lang="el">
-          <head><meta charset="UTF-8"></head>
           <body style="font-family:sans-serif">
             <p>Ένας χρήστης υπέβαλε απόδειξη για τον λογαριασμό <strong>${billId}</strong>.</p>
-            <p>
-              Κτίριο: ${building}<br/>
-              Διαμέρισμα: ${flat}<br/>
-              Ποσό: ${amount} €.
-            </p>
+            <p>Κτίριο: ${building}<br/>
+            Διαμέρισμα: ${flat}<br/>
+            Ποσό: ${amount} €.</p>
             <p>Παρακαλώ ελέγξτε τον πίνακα διαχειριστή.</p>
           </body>
-        </html>
-      `,
+        </html>`,
     })
 
-
-    return res.json({
-      status: true,
-      message: 'Notification email sent to admin.',
-    })
+    return res.json({ status: true, message: 'Notification email sent to admin.' })
   } catch (error) {
     return handleControllerError(res, error)
   }
@@ -97,21 +87,17 @@ const sendMassEmailToBuilding = async (req: Request, res: Response) => {
     const { building, emailSubject, emailTextBody, emails } = req.body
 
     if (!building || !emailSubject || !emailTextBody) {
-      return res
-        .status(400)
-        .json({ status: false, message: 'Missing building or message' })
+      return res.status(400).json({ status: false, message: 'Missing building or message' })
     }
 
     if (!emails || emails.length === 0) {
-      return res
-        .status(404)
-        .json({ status: false, message: 'No users with email found for this building' })
+      return res.status(404).json({ status: false, message: 'No users with email found for this building' })
     }
 
     const results = await Promise.allSettled(
       emails.map((to: string) =>
         resend.emails.send({
-          from: 'onboarding@resend.dev',
+          from: 'Shared Fees <noreply@sharedfeesproject.space>',
           to,
           subject: emailSubject || `Νέος λογαριασμός για το κτίριο ${building}`,
           text: emailTextBody,
