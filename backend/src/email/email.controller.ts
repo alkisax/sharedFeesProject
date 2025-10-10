@@ -141,7 +141,7 @@ export const emailController = {
 
 
 /*
-   Το update του render με ανάγκασε να σταματήσω να χρησιμοποιώ το nodemailer αλλα κρατάω τον κωδικά του ως σχόλιο
+   Το update του render με ανάγκασε να σταματήσω να χρησιμοποιώ το nodemailer αλλα κρατάω τον κωδικά του ως σχόλιο   
 */
 
 // import type { Request, Response } from 'express';
