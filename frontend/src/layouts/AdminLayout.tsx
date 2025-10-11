@@ -5,6 +5,7 @@ import AdminExcelUploadPanel from '../components/AdminExcelUploadPanel'
 import AdminBillsPanel from '../components/AdminBillsPanel'
 import AdminUsersPanel from '../components/AdminUsersPanel';
 import AdminCloudUploadsPanel from "../components/AdminCloudUploadsPanel";
+import AdminInstructions from "../components/AdminInstructions";
 
 const AdminLayout = () => {
   const [activePanel, setActivePanel] = useState("start");
@@ -14,7 +15,7 @@ const AdminLayout = () => {
       <AdminSidebar onSelect={setActivePanel} />
       <main style={{ flexGrow: 1, padding: "16px" }}>
 
-        {activePanel === "start" && <p>Start panel selected</p>}
+        {activePanel === "start" && <AdminInstructions />}
         {activePanel === "excel" && <AdminExcelUploadPanel />}
         {activePanel === "bills" && <AdminBillsPanel />}
         {activePanel === "users" && <AdminUsersPanel />}
