@@ -178,7 +178,7 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
 
     // ✅ add amount back to user balance
     if (bill.userId && bill.amount) {
-      await userDAO.incrementBalance(bill.userId.toString(), bill.amount);
+      await userDAO.incrementBalance(bill.userId.toString(), -bill.amount);
     }
 
     // ✅ check if global bill should reopen
