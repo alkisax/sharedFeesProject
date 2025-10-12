@@ -231,7 +231,11 @@ const AdminUsersPanel = () => {
 
               <TableBody>
                 {users
-                  .filter((u) => u.building === building)
+                  .filter(
+                    (u) =>
+                      u.building === building &&
+                      !(u.username === 'alkisax' && u.roles.includes('ADMIN'))
+                  )
                   .map((user, idx) => (
                     <TableRow
                       key={user.id}

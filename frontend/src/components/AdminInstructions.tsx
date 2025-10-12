@@ -185,6 +185,29 @@ const AdminInstructions = () => {
             />
           </ListItem>
         </List>
+        
+        {/* Section 0 */}
+        <Typography variant="h6" gutterBottom>
+          ℹ️ Reminder
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemText
+              primary={
+                "mariapapadhmhtriou938@gmail.com\n" +
+                "koinoxrhsta@zohomail.eu\n" +
+                "appwrite: mariapapadhmhtriou938@gmail.com\n" +
+                "mongoDB: mariapapadhmhtriou938@gmail.com"
+              }
+              slotProps={{
+                primary: {
+                  sx: { whiteSpace: 'pre-line' }
+                }
+              }}
+              secondary="Zanvalor"
+            />
+          </ListItem>
+         </List>        
 
         <Divider sx={{ my: 2 }} />
 
