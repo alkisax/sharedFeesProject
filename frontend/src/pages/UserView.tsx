@@ -19,6 +19,7 @@ import { UserAuthContext } from '../context/UserAuthContext';
 import type { BillType } from '../types/excel.types';
 import { account, storage } from '../lib/appwriteConfig';
 import { ID } from 'appwrite';
+import CameraCapture from '../components/CameraCapture';
 
 type UploadState = Record<string, File | null>;
 type BusyState = Record<string, boolean>;
@@ -209,101 +210,120 @@ const Userview = () => {
     }
   }
 
-  return (
-    <Box>
-      <Typography variant='h5' gutterBottom>
-        Οι λογαριασμοί μου
-      </Typography>
+return (
+  <Box>
+    <Typography variant='h5' gutterBottom>
+      Οι λογαριασμοί μου
+    </Typography>
 
-      {loading && <LinearProgress />}
+    {loading && <LinearProgress />}
 
-      <Paper sx={{ mt: 2, overflowX: 'auto' }}>
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              <TableCell>Μήνας</TableCell>
-              <TableCell>Κτίριο</TableCell>
-              <TableCell>Διαμέρισμα</TableCell>
-              <TableCell>Σύνολο (€)</TableCell>
-              <TableCell>Κατάσταση</TableCell>
-              <TableCell>Απόδειξη</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {bills.map((b) => {
-              const allowUpload = b.status === 'UNPAID' || b.status === 'CANCELED';
-              return (
-                <TableRow key={b.id} hover>
-                  <TableCell>{b.month}</TableCell>
-                  <TableCell>{b.building}</TableCell>
-                  <TableCell>{b.flat}</TableCell>
-                  <TableCell>{b.amount}</TableCell>
-                  <TableCell>
-                    <Chip label={b.status} color={STATUS_COLOR[b.status]} size='small' />
-                  </TableCell>
-                  <TableCell>
-                    {allowUpload && (
-                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <input
-                          id={`file-${b.id}`}
-                          type='file'
-                          accept='application/pdf,image/*'
-                          style={{ display: 'none' }}
-                          onChange={(e) => onFileChange(b.id, e.target.files?.[0] ?? null)}
-                        />
-                        <label htmlFor={`file-${b.id}`}>
-                          <Button variant='outlined' component='span' disabled={!!busy[b.id]}>
-                            Επιλογή αρχείου
-                          </Button>
-                        </label>
-                        <Typography variant='body2'>
-                          {uploads[b.id]?.name ?? 'κανένα αρχείο'}
-                        </Typography>
-                        <Button
-                          variant='contained'
-                          onClick={() => submitProof(b)}
-                          disabled={!!busy[b.id]}
-                        >
-                          Υποβολή για έλεγχο
+    <Paper sx={{ mt: 2, overflowX: 'auto' }}>
+      <Table size='small'>
+        <TableHead>
+          <TableRow>
+            <TableCell>Μήνας</TableCell>
+            <TableCell>Κτίριο</TableCell>
+            <TableCell>Διαμέρισμα</TableCell>
+            <TableCell>Σύνολο (€)</TableCell>
+            <TableCell>Κατάσταση</TableCell>
+            <TableCell>Απόδειξη</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {bills.map((b) => {
+            const allowUpload = b.status === 'UNPAID' || b.status === 'CANCELED'
+            return (
+              <TableRow key={b.id} hover>
+                <TableCell>{b.month}</TableCell>
+                <TableCell>{b.building}</TableCell>
+                <TableCell>{b.flat}</TableCell>
+                <TableCell>{b.amount}</TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={b.status}
+                    color={STATUS_COLOR[b.status]}
+                    size='small'
+                  />
+                </TableCell>
+
+                <TableCell>
+                  {allowUpload && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      {/* --- file input --- */}
+                      <input
+                        id={`file-${b.id}`}
+                        type='file'
+                        accept='application/pdf,image/*'
+                        style={{ display: 'none' }}
+                        onChange={(e) => onFileChange(b.id, e.target.files?.[0] ?? null)}
+                      />
+                      <label htmlFor={`file-${b.id}`}>
+                        <Button variant='outlined' component='span' size='small'>
+                          Επιλογή
                         </Button>
-                      </Box>
-                    )}
-                    {b.status === 'PENDING' && (
+                      </label>
+
+                      {/* --- camera icon button --- */}
+                      <CameraCapture onCapture={(file) => onFileChange(b.id, file)} />
+
                       <Button
-                        variant='outlined'
-                        color='info'
+                        variant='contained'
                         size='small'
-                        onClick={() => notifyAdmin(b)}
+                        onClick={() => submitProof(b)}
+                        disabled={!!busy[b.id]}
                       >
-                        Ειδοποίηση Διαχειριστή
+                        Υποβολή
                       </Button>
-                    )}
-                    {/* {!allowUpload && (
-                      <Typography variant='body2' sx={{ opacity: 0.7 }}>
-                        Δεν απαιτείται απόδειξη
-                      </Typography>
-                    )} */}
-                    {errors[b.id] && (
-                      <Typography variant='caption' color='error' display='block'>
-                        {errors[b.id]}
-                      </Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {bills.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <Typography variant='body2'>Δεν βρέθηκαν λογαριασμοί.</Typography>
+                    </Box>
+                  )}
+
+                  {/* filename */}
+                  {uploads[b.id] && (
+                    <Typography variant='caption' sx={{ display: 'block', mt: 0.5 }}>
+                      {uploads[b.id]?.name}
+                    </Typography>
+                  )}
+
+                  {/* pending status */}
+                  {b.status === 'PENDING' && (
+                    <Button
+                      variant='outlined'
+                      color='info'
+                      size='small'
+                      onClick={() => notifyAdmin(b)}
+                      sx={{ mt: 0.5 }}
+                    >
+                      Ειδοποίηση Διαχειριστή
+                    </Button>
+                  )}
+
+                  {/* errors */}
+                  {errors[b.id] && (
+                    <Typography variant='caption' color='error' display='block'>
+                      {errors[b.id]}
+                    </Typography>
+                  )}
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
-    </Box>
-  );
+            )
+          })}
+
+          {bills.length === 0 && !loading && (
+            <TableRow>
+              <TableCell colSpan={6}>
+                <Typography variant='body2'>Δεν βρέθηκαν λογαριασμοί.</Typography>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Paper>
+  </Box>
+)
+
 };
 
 export default Userview;
