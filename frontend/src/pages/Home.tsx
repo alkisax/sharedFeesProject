@@ -1,14 +1,47 @@
-import { Box, Typography, Container, Paper } from '@mui/material'
+import { useState, useEffect, useContext } from 'react'
+import axios from 'axios'
+import {
+  Box,
+  Typography,
+  Container,
+  Paper,
+  Alert,
+  LinearProgress,
+} from '@mui/material'
 import StepsImg from '../assets/patras-steps.jpg'
+import { VariablesContext } from '../context/VariablesContext'
 
 const Home = () => {
+  const { url } = useContext(VariablesContext) // ✅ backend base URL
+  const [announcement, setAnnouncement] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchAnnouncement = async () => {
+      try {
+        setLoading(true)
+        const res = await axios.get(`${url}/api/announcement`)
+        if (res.data?.message) {
+          setAnnouncement(res.data.message)
+        }
+      } catch (err) {
+        console.error('Failed to fetch announcement', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAnnouncement()
+  }, [url])
+
   return (
     <Box
       sx={{
-        backgroundColor: '#d7f5faff', // soft grey matching your navbar icons
+        backgroundColor: '#d7f5faff',
         minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
         py: 6,
       }}
     >
@@ -16,13 +49,12 @@ const Home = () => {
         maxWidth='md'
         sx={{
           mt: 6,
-          mb: 8,
-          backgroundColor: '#d7f5faff', // same tone as icons
+          mb: 4,
+          backgroundColor: '#d7f5faff',
           borderRadius: 3,
           p: { xs: 2, sm: 4 },
         }}
       >
-        {/* Card-style container */}
         <Paper
           elevation={4}
           sx={{
@@ -32,26 +64,14 @@ const Home = () => {
             backgroundColor: '#fafafa',
           }}
         >
-          {/* Title */}
-          <Typography
-            variant='h4'
-            component='h1'
-            gutterBottom
-            sx={{ fontWeight: 600 }}
-          >
+          <Typography variant='h4' component='h1' gutterBottom sx={{ fontWeight: 600 }}>
             Καλώς ήρθατε
           </Typography>
 
-          {/* Subtitle */}
-          <Typography
-            variant='subtitle1'
-            color='text.secondary'
-            sx={{ mb: 3 }}
-          >
+          <Typography variant='subtitle1' color='text.secondary' sx={{ mb: 3 }}>
             Εφαρμογή διαχείρισης κοινοχρήστων για πολυκατοικίες.
           </Typography>
 
-          {/* Image container */}
           <Box
             sx={{
               width: '100%',
@@ -75,12 +95,30 @@ const Home = () => {
             />
           </Box>
 
-          {/* Footer note */}
           <Typography variant='body2' color='text.secondary'>
-            2025 Shared Fees Project — 
-            δημιουργήθηκε από τον Π. Κοπακάκη - pelopkop@gmail.com
+            2025 Shared Fees Project — δημιουργήθηκε από τον Π. Κοπακάκη · pelopkop@gmail.com
           </Typography>
         </Paper>
+
+        {/* 📢 Announcement section */}
+        <Box sx={{ mt: 4 }}>
+          {loading && <LinearProgress sx={{ mb: 2 }} />}
+          {announcement && (
+            <Alert
+              severity='info'
+              sx={{
+                fontSize: '1rem',
+                borderRadius: 2,
+                backgroundColor: '#e3f2fd',
+                color: '#0d47a1',
+                py: 2,
+                px: 3,
+              }}
+            >
+              {announcement}
+            </Alert>
+          )}
+        </Box>
       </Container>
     </Box>
   )

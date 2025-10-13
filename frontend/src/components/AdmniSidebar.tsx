@@ -8,6 +8,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import PeopleIcon from '@mui/icons-material/People';
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CampaignIcon from '@mui/icons-material/Campaign';
 
 interface Props {
   onSelect: (panel: string) => void;
@@ -84,6 +85,19 @@ const AdminSidebar = ({ onSelect }: Props) => {
             <ListItemText primary="Cloud Uploads" />
           </ListItemButton>
         </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={active === 'announcement'}
+            onClick={() => handleSelect('announcement')}
+          >
+            <ListItemIcon>
+              <CampaignIcon />
+            </ListItemIcon>
+            <ListItemText primary='Announcement' />
+          </ListItemButton>
+        </ListItem>        
+
       </List>
     </>
   );

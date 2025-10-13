@@ -6,6 +6,7 @@ import AdminBillsPanel from '../components/AdminBillsPanel'
 import AdminUsersPanel from '../components/AdminUsersPanel';
 import AdminCloudUploadsPanel from "../components/AdminCloudUploadsPanel";
 import AdminInstructions from "../components/AdminInstructions";
+import AdminAnnouncementPanel from '../components/AdminAnnouncementPanel'
 
 const AdminLayout = () => {
   const [activePanel, setActivePanel] = useState("start");
@@ -20,6 +21,7 @@ const AdminLayout = () => {
         {activePanel === "bills" && <AdminBillsPanel />}
         {activePanel === "users" && <AdminUsersPanel />}
         {activePanel === "uploads" && <AdminCloudUploadsPanel />}
+        {activePanel === 'announcement' && <AdminAnnouncementPanel />}
         
         <Outlet />
 

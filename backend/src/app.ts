@@ -17,6 +17,7 @@ import billRoutes from './bill//routes/bill.routes'
 import globalBillRoutes from './bill/routes/globalBill.routes'
 import excelRoutes from './xlsxParser/excel.routes'
 import emailRoutes from './email/email.routes'
+import announcementRoutes from './announcement/announcement.routes'
 
 const app = express();
 
@@ -132,6 +133,7 @@ app.use('/api/bills', billRoutes)
 app.use('/api/global-bills', globalBillRoutes)
 app.use('/api/excel', excelRoutes)
 app.use('/api/email', emailRoutes);
+app.use('/api/announcement', announcementRoutes)
 
 app.use('/api/upload-multer', uploadMulterRoutes);
 
