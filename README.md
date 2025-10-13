@@ -13,8 +13,8 @@ Admins review and approve payments, manage users, and monitor overall building b
 ## 🚀 Tech Stack
 
 **Frontend**
-- React 18 + TypeScript
-- React Router 6
+- React 19 + TypeScript
+- React Router 
 - Material UI (MUI) components
 - Axios for API calls
 - Context API for auth & variables
@@ -26,10 +26,7 @@ Admins review and approve payments, manage users, and monitor overall building b
 - Multer for file uploads (Excel & receipts)
 - Excel parsing (xlsx)
 - Appwrite/S3-ready for file storage
-
-**Testing & Dev**
-- Jest (backend tests)
-- Swagger/OpenAPI docs (backend API)
+- resend for emailing
 
 ---
 
