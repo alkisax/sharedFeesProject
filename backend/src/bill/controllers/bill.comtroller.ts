@@ -161,6 +161,8 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ status: false, message: "Bill not found" });
     }
 
+    const prevStatus = bill.status; // 'UNPAID' | 'PENDING' | 'PAID' | 'CANCELED'
+
     // add a rejection note
     const notes = bill.notes || [];
     notes.push(
@@ -176,9 +178,13 @@ export const cancelBill = async (req: AuthRequest, res: Response) => {
       notes,
     });
 
-    // ✅ add amount back to user balance
+    // balance adjustment rules:
+    // - PAID   -> UNPAID : user owes again => balance -= amount
+    // - PENDING-> UNPAID : just rejecting the proof, no credit was given => no change
     if (bill.userId && bill.amount) {
-      await userDAO.incrementBalance(bill.userId.toString(), -bill.amount);
+      if (prevStatus === 'PAID') {
+        await userDAO.incrementBalance(bill.userId.toString(), -bill.amount);
+      }
     }
 
     // ✅ check if global bill should reopen
