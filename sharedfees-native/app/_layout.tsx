@@ -15,6 +15,7 @@ const RootLayout = () => {
         //ό,τι ορίζεις εδώ θα εφαρμόζεται σε κάθε <Stack.Screen>
         // Ορίζει το χρώμα φόντου της μπάρας τίτλου
         screenOptions={{ 
+        headerShown: false,   // 👈 αυτό μου κρύβει το αυτοματο navbar του expo. αποφασισα να το κάνω αυτό γιατί έυτιαξα δικό μου custom Navbar στο sharedfees-native\components\Navbar.tsx
         headerStyle: {
           backgroundColor: '#ff8c00'
         },
@@ -36,6 +37,7 @@ const RootLayout = () => {
       >
         {/* Στο Expo Router, κάθε αρχείο μέσα στον φάκελο app/ αντιστοιχεί σε μία οθόνη (route). */}
         <Stack.Screen name='index' options= {{ title: 'Home'}} />
+        <Stack.Screen name="login/index" options={{ title: 'Login' }} />
       </Stack>
     </VariablesProvider>
 
