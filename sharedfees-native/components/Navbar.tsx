@@ -19,9 +19,16 @@ Appbar.BackAction	Εικονίδιο “πίσω”
 import { Appbar } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { StyleSheet } from 'react-native'
+import { useUserAuth } from '@/context/UserAuthContext'
 
 const Navbar = () => {
   const router = useRouter()
+  const { user, logout } = useUserAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/login')
+  }
 
   return (
     <Appbar.Header
@@ -40,11 +47,30 @@ const Navbar = () => {
         titleStyle={styles.title}
       />
 
-      <Appbar.Action
-        icon='login'
-        color='white'
-        onPress={() => router.push('/login')}
-      />
+      {user ? (
+        <>
+          {/* Profile icon */}
+          <Appbar.Action
+            icon='account-circle'
+            color='white'
+            onPress={() => router.push('/profile')}
+          />
+
+          {/* Logout icon */}
+          <Appbar.Action
+            icon='logout'
+            color='white'
+            onPress={handleLogout}
+          />
+        </>
+      ) : (
+        /* Login icon */
+        <Appbar.Action
+          icon='login'
+          color='white'
+          onPress={() => router.push('/login')}
+        />
+      )}
     </Appbar.Header>
   )
 }
