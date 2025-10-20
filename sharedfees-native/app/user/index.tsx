@@ -12,6 +12,7 @@ import CameraCaptureNative from '@/components/CameraCaptureNative'
 import { useAppwriteUploaderNative } from '@/hooks/useAppwriteUploaderNative'
 import { FilePickerNative } from  '@/components/FilePickerNative'
 import { SafeAreaView } from 'react-native-safe-area-context';
+import NotifyAdminButton from '@/components/NotifyAdminButton'
 
 const STATUS_COLOR: Record<BillType['status'], string> = {
   UNPAID: 'orange',
@@ -192,6 +193,12 @@ const UserView = () => {
                   >
                     Υποβολή
                   </Button>
+                </Card.Actions>
+              )}
+
+              {item.status === 'PENDING' && (
+                <Card.Actions style={styles.actions}>
+                  <NotifyAdminButton bill={item} />
                 </Card.Actions>
               )}
             </Card>
