@@ -7,6 +7,7 @@ import { UserProvider } from "@/context/UserAuthContext";
 import { VariablesProvider } from "@/context/variablesContext";
 // Stack Navigator component, δηλαδή τον μηχανισμό που δείχνει κάθε οθόνη με “στοίβα” (όπως στο Android: μπαίνεις σε μια σελίδα και πατάς back για να γυρίσεις).
 import { Stack } from "expo-router";
+import 'react-native-url-polyfill/auto' // αυτό το χρειαζόμαστε για το appwrite upload. δεν είμαι σιγουρος τι κάνει
 
 const RootLayout = () => {
   return (
@@ -40,6 +41,8 @@ const RootLayout = () => {
           {/* Στο Expo Router, κάθε αρχείο μέσα στον φάκελο app/ αντιστοιχεί σε μία οθόνη (route). */}
           <Stack.Screen name='index' options= {{ title: 'Home'}} />
           <Stack.Screen name="login/index" options={{ title: 'Login' }} />
+          <Stack.Screen name="profile/index" options={{ title: 'Profile' }} />
+          <Stack.Screen name="user/index" options={{ title: 'Οι Λογαριασμοί Μου' }} />
         </Stack>        
       </UserProvider>
 
