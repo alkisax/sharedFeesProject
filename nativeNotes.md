@@ -36,3 +36,12 @@ npx expo install expo-secure-store react-native-paper
 rm -rf .expo node_modules/.cache
 npx expo start --tunnel --clear
 ```
+
+# profile
+# user view
+```bash
+npm i expo-camera
+npx expo install expo-document-picker
+npx expo install expo-image-manipulator
+npx expo install react-native-appwrite react-native-url-polyfill
+```

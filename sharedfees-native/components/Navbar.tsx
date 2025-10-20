@@ -47,6 +47,24 @@ const Navbar = () => {
         titleStyle={styles.title}
       />
 
+      {/* 📄 My Bills (only for non-admin users) */}
+      {user && !user.roles?.includes('ADMIN') && (
+        <Appbar.Action
+          icon='file-document-outline' // or 'receipt' depending on icon pack
+          color='white'
+          onPress={() => router.push('/user')}
+        />
+      )}
+
+      {/* 👑 Admin Panel (if user has ADMIN role) */}
+      {user && user.roles?.includes('ADMIN') && (
+        <Appbar.Action
+          icon='shield-account'
+          color='white'
+          // onPress={() => router.push('/admin')}
+        />
+      )}      
+
       {user ? (
         <>
           {/* Profile icon */}
