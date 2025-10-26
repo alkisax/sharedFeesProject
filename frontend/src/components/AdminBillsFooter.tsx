@@ -60,6 +60,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<BillType | null>(null);
+  // const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   // ✅ state for popup tables
   const [openTables, setOpenTables] = useState(false);
@@ -70,9 +71,10 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
   // extend types
   const handleAction = async (
     billId: string,
-    action: 'approve' | 'cancel' | 'cash'
+    action: 'approve' | 'cancel' | 'cash' | "delete"
   ) => {
     try {
+      // let method: 'patch' | 'delete' = 'patch'
       let endpoint = '';
       if (action === 'approve') {
         endpoint = `${url}/api/bills/${billId}/approve`;
@@ -80,13 +82,22 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
         endpoint = `${url}/api/bills/${billId}/cancel`;
       } else if (action === 'cash') {
         endpoint = `${url}/api/bills/${billId}/pay-cash`;
-      }
+      } 
+      // else if (action === 'delete') {
+      //   endpoint = `${url}/api/bills/${billId}`
+      //   method = 'delete'
+      // }
 
       await axios.patch(
         endpoint,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      // if (method === 'delete') {
+      //   await axios.delete(endpoint, { headers: { Authorization: `Bearer ${token}` } })
+      // } else {
+      //   await axios.patch(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } })
+      // }
 
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -145,6 +156,30 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
                     </Button>
                   )
                 )}
+
+                {/* 🗑️ Delete button (only for admin correction)
+                {(b.status === "UNPAID" || b.status === "CANCELED") && (
+                  isSmall ? (
+                    <Tooltip title="Delete this bill">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => setConfirmDelete(b.id)}
+                      >
+                        <WarningAmberIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setConfirmDelete(b.id)}
+                    >
+                      Delete
+                    </Button>
+                  )
+                )} */}
 
                 {b.receiptUrl && (
                   isSmall ? (
@@ -365,6 +400,47 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Delete Dialog
+      <Dialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <WarningAmberIcon color="error" />
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography color="error" fontWeight="bold">
+            This will permanently delete the bill from the database.
+          </Typography>
+          <Typography mt={1}>
+            Are you sure you want to proceed? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => {
+              if (confirmDelete) handleAction(confirmDelete, "delete")
+              setConfirmDelete(null)
+            }}
+          >
+            Yes, Delete
+          </Button>
+          <Button
+            color="success"
+            variant="contained"
+            onClick={() => setConfirmDelete(null)}
+          >
+            Keep
+          </Button>
+        </DialogActions>
+      </Dialog> */}
+
 
       {/* Confirm Cancel Dialog */}
       <Dialog
