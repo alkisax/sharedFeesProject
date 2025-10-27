@@ -60,7 +60,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<BillType | null>(null);
-  // const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   // ✅ state for popup tables
   const [openTables, setOpenTables] = useState(false);
@@ -74,7 +74,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
     action: 'approve' | 'cancel' | 'cash' | "delete"
   ) => {
     try {
-      // let method: 'patch' | 'delete' = 'patch'
+      let method: 'patch' | 'delete' = 'patch'
       let endpoint = '';
       if (action === 'approve') {
         endpoint = `${url}/api/bills/${billId}/approve`;
@@ -83,21 +83,25 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
       } else if (action === 'cash') {
         endpoint = `${url}/api/bills/${billId}/pay-cash`;
       } 
-      // else if (action === 'delete') {
-      //   endpoint = `${url}/api/bills/${billId}`
-      //   method = 'delete'
-      // }
+      else if (action === 'delete') {
+      // 🧠 Safe delete: cancel first to restore balance, then delete
+      const cancelEndpoint = `${url}/api/bills/${billId}/cancel`;
+      await axios.patch(cancelEndpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
 
-      await axios.patch(
-        endpoint,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      // if (method === 'delete') {
-      //   await axios.delete(endpoint, { headers: { Authorization: `Bearer ${token}` } })
-      // } else {
-      //   await axios.patch(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } })
-      // }
+      endpoint = `${url}/api/bills/${billId}`;
+      method = 'delete';
+    }
+
+      // await axios.patch(
+      //   endpoint,
+      //   {},
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      if (method === 'delete') {
+        await axios.delete(endpoint, { headers: { Authorization: `Bearer ${token}` } })
+      } else {
+        await axios.patch(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } })
+      }
 
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -157,7 +161,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
                   )
                 )}
 
-                {/* 🗑️ Delete button (only for admin correction)
+                {/* 🗑️ Delete button (only for admin correction) */}
                 {(b.status === "UNPAID" || b.status === "CANCELED") && (
                   isSmall ? (
                     <Tooltip title="Delete this bill">
@@ -179,7 +183,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
                       Delete
                     </Button>
                   )
-                )} */}
+                )}
 
                 {b.receiptUrl && (
                   isSmall ? (
@@ -401,7 +405,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Delete Dialog
+      {/* Confirm Delete Dialog */}
       <Dialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
@@ -439,7 +443,7 @@ const AdminBillsFooter = ({ bills, colSpan, onRefresh }: Props) => {
             Keep
           </Button>
         </DialogActions>
-      </Dialog> */}
+      </Dialog>
 
 
       {/* Confirm Cancel Dialog */}

@@ -14,7 +14,12 @@ import {
   Button,
   Stack,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import axios from "axios";
 import { VariablesContext } from "../context/VariablesContext";
 import type { GlobalBillType, BillType } from "../types/excel.types";
@@ -31,6 +36,7 @@ const AdminBillsPanel = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [billsMap, setBillsMap] = useState<Record<string, BillType[]>>({});
   const [loading, setLoading] = useState(false);
+  const [confirmDeleteGlobal, setConfirmDeleteGlobal] = useState<string | null>(null);
 
   const [buildings, setBuildings] = useState<string[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
@@ -180,118 +186,184 @@ const AdminBillsPanel = () => {
 // )
 
   return (
-    <div>
-      <Typography variant="h5" gutterBottom>
-        Global Bills
-      </Typography>
 
-      <FormControlLabel
-        control={
-          <Switch
-            checked={showAll}
-            onChange={() => setShowAll((prev) => !prev)}
-            color="primary"
-          />
-        }
-        label={showAll ? "Showing all bills" : "Showing only open"}
-      />
+    <>
+      <div>
+        <Typography variant="h5" gutterBottom>
+          Global Bills
+        </Typography>
 
-      {loading && <p>Loading...</p>}
-
-      {/* Building buttons */}
-      <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: "wrap" }}>
-        {buildings.length === 0 ? (
-          <Typography variant="body1" color="text.secondary">
-            No bills in the system
-          </Typography>
-        ) : (
-          buildings.map((b) => (
-            <Button
-              key={b}
-              variant={b === selectedBuilding ? "contained" : "outlined"}
-              onClick={() => {
-                setSelectedBuilding(b);
-                setExpanded(null); // reset expanded row
-              }}
-            >
-              {b}
-            </Button>
-          ))
-        )}
-      </Stack>
-
-      {/* 📨 Mass mailer section */}
-      {selectedBuilding && (
-        <AdminBuildingMailer
-          building={selectedBuilding}
-          emails={buildingEmails}
+        <FormControlLabel
+          control={
+            <Switch
+              checked={showAll}
+              onChange={() => setShowAll((prev) => !prev)}
+              color="primary"
+            />
+          }
+          label={showAll ? "Showing all bills" : "Showing only open"}
         />
-      )}
 
-      {/* Building bills table */}
-      {selectedBuilding && (
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Bills for {selectedBuilding}
-          </Typography>
+        {loading && <p>Loading...</p>}
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Month</TableCell>
-                  <TableCell>Building</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Created</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedBills.map((g) => (
-                  <React.Fragment key={g.id}>
-                    <TableRow
-                      hover
-                      sx={{
-                        cursor: "pointer",
-                        bgcolor: getRowColor(billsMap[g.id] || []),
-                      }}
-                      onClick={() => handleToggleExpand(g)}
-                    >
-                      <TableCell>{g.month}</TableCell>
-                      <TableCell>{g.building}</TableCell>
-                      <TableCell>{g.status}</TableCell>
-                      <TableCell>
-                        {new Date(g.createdAt).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-
-                    {expanded === g.id && (
-                      <AdminBillsFooter
-                        bills={billsMap[g.id] || []}
-                        colSpan={4}
-                        onRefresh={() => {
-                          fetchBillsForGlobal(g.id)
-                          fetchGlobalBills()
-                        }}
-                      />
-                    )}
-                  </React.Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {filteredBills.length > rowsPerPage && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Pagination
-                count={Math.ceil(filteredBills.length / rowsPerPage)}
-                page={page}
-                onChange={(_, value) => setPage(value)}
-                color="primary"
-              />
-            </Box>
+        {/* Building buttons */}
+        <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: "wrap" }}>
+          {buildings.length === 0 ? (
+            <Typography variant="body1" color="text.secondary">
+              No bills in the system
+            </Typography>
+          ) : (
+            buildings.map((b) => (
+              <Button
+                key={b}
+                variant={b === selectedBuilding ? "contained" : "outlined"}
+                onClick={() => {
+                  setSelectedBuilding(b);
+                  setExpanded(null); // reset expanded row
+                }}
+              >
+                {b}
+              </Button>
+            ))
           )}
-        </Box>
-      )}
-    </div>
+        </Stack>
+
+        {/* 📨 Mass mailer section */}
+        {selectedBuilding && (
+          <AdminBuildingMailer
+            building={selectedBuilding}
+            emails={buildingEmails}
+          />
+        )}
+
+        {/* Building bills table */}
+        {selectedBuilding && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Bills for {selectedBuilding}
+            </Typography>
+
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Month</TableCell>
+                    <TableCell>Building</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedBills.map((g) => (
+                    <React.Fragment key={g.id}>
+                      <TableRow
+                        hover
+                        sx={{
+                          cursor: "pointer",
+                          bgcolor: getRowColor(billsMap[g.id] || []),
+                        }}
+                        onClick={() => handleToggleExpand(g)}
+                      >
+                        <TableCell>{g.month}</TableCell>
+                        <TableCell>{g.building}</TableCell>
+                        <TableCell>{g.status}</TableCell>
+                        <TableCell>
+                          {new Date(g.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeleteGlobal(g.id);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+
+                      {expanded === g.id && (
+                        <AdminBillsFooter
+                          bills={billsMap[g.id] || []}
+                          colSpan={4}
+                          onRefresh={() => {
+                            fetchBillsForGlobal(g.id)
+                            fetchGlobalBills()
+                          }}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {filteredBills.length > rowsPerPage && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Pagination
+                  count={Math.ceil(filteredBills.length / rowsPerPage)}
+                  page={page}
+                  onChange={(_, value) => setPage(value)}
+                  color="primary"
+                />
+              </Box>
+            )}
+          </Box>
+        )}
+      </div>
+
+       {/* ❌ confirmation dialog for delete */}
+      <Dialog
+        open={!!confirmDeleteGlobal}
+        onClose={() => setConfirmDeleteGlobal(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningAmberIcon color="error" />
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography color="error" fontWeight="bold">
+            This will permanently delete this Global Bill and all its user bills.
+          </Typography>
+          <Typography mt={1}>
+            Are you sure you want to proceed? Balances will be automatically adjusted.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                await axios.delete(`${url}/api/global-bills/${confirmDeleteGlobal}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                setConfirmDeleteGlobal(null);
+                await fetchGlobalBills();
+              } catch (err) {
+                console.error('Error deleting global bill:', err);
+              }
+            }}
+          >
+            Yes, Delete
+          </Button>
+          <Button
+            color="success"
+            variant="contained"
+            onClick={() => setConfirmDeleteGlobal(null)}
+          >
+            Keep
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+    </>
   );
 };
 

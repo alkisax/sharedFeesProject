@@ -220,17 +220,48 @@ export const updateBillById = async (req: Request, res: Response) => {
 // delete bill
 export const deleteBillById = async (req: Request, res: Response) => {
   try {
-    const billId = req.params.id
+    const billId = req.params.id;
     if (!billId) {
-      return res.status(400).json({ status: false, message: 'Bill ID is required' })
+      return res
+        .status(400)
+        .json({ status: false, message: 'Bill ID is required' });
     }
 
-    const deleted = await billDAO.deleteById(billId)
-    return res.status(200).json({ status: true, data: deleted })
+    const bill = await billDAO.readById(billId);
+    if (!bill) {
+      return res
+        .status(404)
+        .json({ status: false, message: 'Bill not found' });
+    }
+
+    // 🧠 Balance adjustment rules:
+    // If bill is UNPAID or PENDING → user owes money → we must subtract that debt
+    // If bill is PAID → already settled, no balance change
+    // If bill is CANCELED → already neutralized, no balance change
+    if (bill.userId && bill.amount) {
+      if (bill.status === 'UNPAID' || bill.status === 'PENDING') {
+        await userDAO.incrementBalance(bill.userId.toString(), bill.amount);
+      }
+    }
+
+    // 🗑️ Delete the bill
+    const deleted = await billDAO.deleteById(billId);
+
+    // 🏢 Update the global bill's completeness status
+    if (bill.globalBillId) {
+      await globalBillDAO.updateGlobalBillStatus(bill.globalBillId.toString());
+    }
+
+    return res.status(200).json({
+      status: true,
+      data: deleted,
+      message: 'Bill deleted and user balance adjusted successfully.',
+    });
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
-}
+};
+
 
 export const billController = {
   createBill,

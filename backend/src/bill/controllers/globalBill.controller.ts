@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import { handleControllerError } from '../../utils/error/errorHandler'
 import { globalBillDAO } from '../dao/globalBill.dao'
+import { userDAO } from '../../login/dao/user.dao'
+import { billDAO } from '../dao/bill.dao'
 
 import type { Request, Response } from 'express'
 import type { CreateGlobalBill } from '../types/bill.types'
@@ -72,20 +74,55 @@ export const updateGlobalById = async (req: Request, res: Response) => {
   }
 }
 
-// delete global bill
+// delete global bill (and its user bills)
 export const deleteGlobalById = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id
+    const id = req.params.id;
     if (!id) {
-      return res.status(400).json({ status: false, message: 'no Id provided' })
+      return res
+        .status(400)
+        .json({ status: false, message: 'Global bill ID is required' });
     }
 
-    const deletedBill = await globalBillDAO.deleteById(id)
-    return res.status(200).json({ status: true, data: deletedBill })
+    // find the global bill
+    const global = await globalBillDAO.readById(id);
+    if (!global) {
+      return res
+        .status(404)
+        .json({ status: false, message: 'Global bill not found' });
+    }
+
+    // find all child bills
+    const bills = await billDAO.findByGlobalBillId(id);
+
+    // if any bills exist → delete one by one so balances adjust
+    if (bills.length > 0) {
+      for (const bill of bills) {
+        // adjust balance for unpaid/pending users
+        if (bill.userId && bill.amount) {
+          if (bill.status === 'UNPAID' || bill.status === 'PENDING') {
+            await userDAO.incrementBalance(bill.userId.toString(), bill.amount);
+          }
+        }
+        // then delete bill
+        await billDAO.deleteById(bill.id);
+      }
+    }
+
+    // finally, delete the global bill itself
+    const deletedGlobal = await globalBillDAO.deleteById(id);
+
+    return res.status(200).json({
+      status: true,
+      message: bills.length
+        ? `Global bill and its ${bills.length} bills deleted successfully.`
+        : 'Empty global bill deleted successfully.',
+      data: deletedGlobal,
+    });
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
-}
+};
 
 export const globalBillController = {
   createGlobalBill,
