@@ -95,6 +95,11 @@ const insertManyServer = async (bills: Partial<IBill>[]): Promise<IBill[]> => {
   return response as IBill[];
 };
 
+const findByGlobalBillId = async (globalBillId: string) => {
+  const bills = await Bill.find({ globalBillId });
+  return bills.map(toBillDAO);
+};
+
 export const billDAO = {
   toBillDAO,
   create,
@@ -104,5 +109,6 @@ export const billDAO = {
   toServerById,
   update,
   deleteById,
-  insertManyServer
+  insertManyServer,
+  findByGlobalBillId
 }

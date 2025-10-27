@@ -45,3 +45,17 @@ npx expo install expo-document-picker
 npx expo install expo-image-manipulator
 npx expo install react-native-appwrite react-native-url-polyfill
 ```
+
+# apk
+```bash
+npm i -g eas-cli
+eas login
+# https://expo.dev
+eas init
+# αφού βάλω env
+eas build --platform android --profile production
+```
+
+
+📝  Android application id Learn more: https://expo.fyi/android-package
+√ What would you like your Android application id to be? ... com.alkisax.sharedfeesnative
