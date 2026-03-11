@@ -11,7 +11,7 @@ import UserView from "./pages/UserView";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/shared-fees">
       <Routes>
         <Route element={<LayoutWithNavbar />}>
           <Route path="/" element={<Home />} />
