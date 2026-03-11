@@ -33,3 +33,11 @@ systemctl reload nginx
 curl https://portfolio-projects.space/shared-fees/ | head
 ```
 
+### oneline
+```bash
+cd /var/www/shared-fees && git pull origin main && cd frontend && npm install && npm run build && cd ../backend && npm install && npm run build && pm2 restart shared-fees && sleep 2 && curl -s https://portfolio-projects.space/shared-fees/api/ping && echo " ✓ shared-fees deploy OK"
+```
+pm2 logs shared-fees --lines 50
+pm2 flush shared-fees
+
+
